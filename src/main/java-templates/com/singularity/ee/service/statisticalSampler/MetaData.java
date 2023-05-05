@@ -14,12 +14,12 @@ public class MetaData {
 
     public static Map<String,String> getAsMap() {
         Map<String,String> map = new HashMap<>();
-        map.put("agentupdater-version", VERSION);
-        map.put("agentupdater-buildTimestamp", BUILDTIMESTAMP);
-        map.put("agentupdater-developer", GECOS);
-        map.put("agentupdater-github", GITHUB);
-        map.put("agentupdater-devnet", DEVNET);
-        map.put("agentupdater-support", SUPPORT);
+        map.put("statisticalSampler-version", VERSION);
+        map.put("statisticalSampler-buildTimestamp", BUILDTIMESTAMP);
+        map.put("statisticalSampler-developer", GECOS);
+        map.put("statisticalSampler-github", GITHUB);
+        map.put("statisticalSampler-devnet", DEVNET);
+        map.put("statisticalSampler-support", SUPPORT);
         return map;
     }
 }
