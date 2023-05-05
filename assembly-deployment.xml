@@ -22,7 +22,7 @@
         <file>
             <source>AgentStatisticalSampler-${pom.version}.jar</source>
             <outputDirectory>.</outputDirectory>
-            <destName>AgentUpdater.jar</destName>
+            <destName>StatisticalSampler.jar</destName>
         </file>
     </files>
 </assembly>
