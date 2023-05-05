@@ -30,7 +30,7 @@ The logic of this is:
 
 ## Installation - You only have to do this once
 
-Some setup. This should be installed in the < agent install dir >/ver22.###/external-services/agent-updater directory
+Some setup. This should be installed in the < agent install dir >/ver22.###/external-services/Statistical-Sampling directory
 the < agent intall dir >/ver22.###/conf/app-agent-config.xml at line 120 has to have signing disabled in the "Dynamic Services" section:
 
     <configuration-properties>
