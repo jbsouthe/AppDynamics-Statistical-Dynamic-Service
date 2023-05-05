@@ -10,7 +10,7 @@ import com.singularity.ee.util.javaspecific.threads.IAgentRunnable;
 import java.util.Map;
 
 public class StatisticalDisableMetricsSendingTask implements IAgentRunnable {
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.CheckForAgentUpgradeRequestTask");
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.StatisticalDisableMetricsSendingTask");
     private IDynamicService agentService;
     private AgentNodeProperties agentNodeProperties;
     private ServiceComponent serviceComponent;
@@ -41,11 +41,11 @@ public class StatisticalDisableMetricsSendingTask implements IAgentRunnable {
         Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage();
         int r = (int) (Math.random() *100);
         if( r > percentageOfNodesSendingData ) { //if r > 10% (the large number
-            logger.info("This Agent WILL NOT be sending data, it is randomly selected to disable metrics to the controller r="+r);
+            sendInfoEvent("This Agent WILL NOT be sending data, it is randomly selected to disable metrics to the controller r="+r);
             serviceComponent.getMetricHandler().getMetricService().hotDisable(); //disable all metrics
             return;
         } //else r <= 10%; so continue
-        logger.info("This Agent WILL be sending data, it is randomly selected to enable metrics to the controller r="+r);
+        sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable metrics to the controller r="+r);
         serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
     }
 
@@ -55,7 +55,7 @@ public class StatisticalDisableMetricsSendingTask implements IAgentRunnable {
 
     private void sendInfoEvent(String message, Map map) {
         logger.info("Sending Custom INFO Event with message: "+ message);
-        if( !map.containsKey("agentupdater-version") ) map.putAll(MetaData.getAsMap());
+        if( !map.containsKey("statisticalSampler-version") ) map.putAll(MetaData.getAsMap());
         serviceComponent.getEventHandler().publishInfoEvent(message, map);
     }
     
