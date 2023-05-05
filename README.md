@@ -14,7 +14,20 @@ setting the following will cause it to perform the updates. The service will run
 
     "agent.statisticalSampler.enabled" - boolean, setting this to true causes this service to come alive
     "agent.statisticalSampler.percentage" - the percentage of agents sending data, recommended 10%, as an int 1-90, if higher than 90 we will select 90, if lower than 1 we set to 1
-    
+
+Once enabled, it will determine randomly if the agent should enable metrics, and then it will run every hour and decide once again whether it will continue to disable/enable metrics and randomly make the decision again.
+The logic of this is:
+
+    Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage(); //assume this is 10% for the examples in the logic below
+    int r = (int) (Math.random() *100);
+    if( r > percentageOfNodesSendingData ) { //if r > 10% (the large number
+    logger.info("This Agent WILL NOT be sending data, it is randomly selected to disable metrics to the controller r="+r);
+    serviceComponent.getMetricHandler().getMetricService().hotDisable(); //disable all metrics
+    return;
+    } //else r <= 10%; so continue
+    logger.info("This Agent WILL be sending data, it is randomly selected to enable metrics to the controller r="+r);
+    serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
+
 ## Installation - You only have to do this once
 
 Some setup. This should be installed in the < agent install dir >/ver22.###/external-services/agent-updater directory
