@@ -103,6 +103,7 @@ public class StatisticalSamplerService implements IDynamicService {
             this.scheduledTaskFuture.cancel(true);
             this.scheduledTaskFuture = null;
             this.isServiceStarted = false;
+            serviceComponent.getMetricHandler().getMetricService().hotEnable(); // when we stop the service, enable metrics again
         }
     }
 
