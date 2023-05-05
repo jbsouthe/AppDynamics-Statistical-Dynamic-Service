@@ -14,6 +14,7 @@ setting the following will cause it to perform the updates. The service will run
 
     "agent.statisticalSampler.enabled" - boolean, setting this to true causes this service to come alive
     "agent.statisticalSampler.percentage" - the percentage of agents sending data, recommended 10%, as an int 1-90, if higher than 90 we will select 90, if lower than 1 we set to 1
+    "agent.statisticalSampler.maxEvents" - when chance dictates, set max events to this new value, 0 disables events, otherwise it sets it to the new value
 
 Once enabled, it will determine randomly if the agent should enable metrics, and then it will run every hour and decide once again whether it will continue to disable/enable metrics and randomly make the decision again.
 The logic of this is:
