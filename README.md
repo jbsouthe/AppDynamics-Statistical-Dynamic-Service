@@ -1,7 +1,6 @@
 # AppDynamics Java Agent Statistical Sampling Dynamic Service Extension
-
-[![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/jbsouthe/AppDynamicsAgentUpdater) 
-[Github Link To This Repo](https://github.com/jbsouthe/AppDynamicsAgentUpdater)
+ 
+[Github Link To This Repo](https://github.com/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 
 This extension allows the AppDynamics Java Agent to decide on startup whether or not it should send metrics to the controller. In very large tiers, this data is not needed because a sample can be used to estimate actual metrics and support higher agent loads.
 
@@ -31,7 +30,7 @@ the < agent intall dir >/ver22.###/conf/app-agent-config.xml at line 120 has to 
 
 ## How to "do it"
 
-Custom node properties control these activities. Setting the <B>"agent.upgrader.version.preferred"</B> node property will attempt to keep the agent at the version specified to the most significant part of the version entered. 
-If you want to make sure you have the latest version for 2023, just enter "23", but if you want to make sure you have all the hot fixes or builds for April 2023, enter "23.4". Do not enter "24" if no releases exist for 2024, or the agent will not be upgraded until a release is available.
+Custom node properties control these activities. Setting the <B>"agent.statisticalSampler.enabled"</B> node property to true will enable this service, when this service is disabled it will enable metrics collection as it removes itself. 
+Setting the node property <B>"agent.statisticalSampler.percentage"</B> to an integer between 1 and 99 will set the percentage of nodes enabled to send metrics as part of this statistical sample.
 
 ![Node Property Example](doc-images/AgentUpdaterNodeProperties.png)
