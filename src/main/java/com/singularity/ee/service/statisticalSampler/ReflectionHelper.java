@@ -12,27 +12,27 @@ public class ReflectionHelper {
 
     public static void setMaxEvents( Object eventServiceObject, int newMaxEvents ) {
         try {
-            Field field = eventServiceObject.getClass().getField("maxEventSize");
+            Field field = eventServiceObject.getClass().getDeclaredField("maxEventSize");
             field.setAccessible(true);
             Field modifiersField = Field.class.getDeclaredField("modifiers");
             modifiersField.setAccessible(true);
             modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            field.set(null, newMaxEvents);
+            field.set(eventServiceObject, newMaxEvents);
         } catch (Exception e) {
-            logger.error(String.format("Can not set the maxEventSize to %d, Exception: %s",newMaxEvents,e.getMessage()));
+            logger.error(String.format("Can not set the maxEventSize to %d, Exception: %s",newMaxEvents,e.getMessage()),e);
         }
     }
 
     public static int getMaxEvents( Object eventServiceObject ) {
         try {
-            Field field = eventServiceObject.getClass().getField("maxEventSize");
+            Field field = eventServiceObject.getClass().getDeclaredField("maxEventSize");
             field.setAccessible(true);
             Field modifiersField = Field.class.getDeclaredField("modifiers");
             modifiersField.setAccessible(true);
             modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            return (int) field.get(field);
+            return (int) field.get(eventServiceObject);
         } catch (Exception e) {
-            logger.error(String.format("Can not get the maxEventSize from object sending from system property, Exception: %s",e.getMessage()));
+            logger.error(String.format("Can not get the maxEventSize from object sending from system property, Exception: %s",e.getMessage()),e);
             return SystemUtilsTranslateable.getIntProperty("appdynamics.agent.maxEvents", 100);
         }
     }
