@@ -23,11 +23,11 @@ The logic of this is:
     int r = (int) (Math.random() *100);
     if( r > percentageOfNodesSendingData ) { //if r > 10% (the large number
         logger.info("This Agent WILL NOT be sending data, it is randomly selected to disable metrics to the controller r="+r);
-        serviceComponent.getMetricHandler().getMetricService().hotDisable(); //disable all metrics
         return;
-    } //else r <= 10%; so continue
+    } else {//else r <= 10%; so continue
         logger.info("This Agent WILL be sending data, it is randomly selected to enable metrics to the controller r="+r);
-        serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
+		return;
+	}
 
 ## Installation - You only have to do this once
 
