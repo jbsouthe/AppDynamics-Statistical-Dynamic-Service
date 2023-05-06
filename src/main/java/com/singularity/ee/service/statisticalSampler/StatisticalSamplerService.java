@@ -1,9 +1,7 @@
 package com.singularity.ee.service.statisticalSampler;
 
-import com.singularity.ee.agent.appagent.kernel.AgentKernel;
 import com.singularity.ee.agent.appagent.kernel.LifeCycleManager;
 import com.singularity.ee.agent.appagent.kernel.ServiceComponent;
-import com.singularity.ee.agent.appagent.kernel.spi.IAgentService;
 import com.singularity.ee.agent.appagent.kernel.spi.IDynamicService;
 import com.singularity.ee.agent.appagent.kernel.spi.IDynamicServiceManager;
 import com.singularity.ee.agent.appagent.kernel.spi.IServiceContext;
@@ -85,7 +83,7 @@ public class StatisticalSamplerService implements IDynamicService {
 
     private IAgentRunnable createTask(ServiceComponent serviceComponent) {
         logger.info("Creating Task for agent version upgrade monitoring");
-        return new StatisticalDisableMetricsSendingTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
+        return new StatisticalDisableSendingDataTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
     }
 
     @Override

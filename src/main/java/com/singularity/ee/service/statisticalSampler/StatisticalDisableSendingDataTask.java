@@ -9,18 +9,19 @@ import com.singularity.ee.util.javaspecific.threads.IAgentRunnable;
 
 import java.util.Map;
 
-public class StatisticalDisableMetricsSendingTask implements IAgentRunnable {
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.StatisticalDisableMetricsSendingTask");
+public class StatisticalDisableSendingDataTask implements IAgentRunnable {
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.StatisticalDisableSendingDataTask");
     private IDynamicService agentService;
     private AgentNodeProperties agentNodeProperties;
     private ServiceComponent serviceComponent;
     private IServiceContext serviceContext;
 
-    public StatisticalDisableMetricsSendingTask(IDynamicService agentService, AgentNodeProperties agentNodeProperties, ServiceComponent serviceComponent, IServiceContext iServiceContext) {
+    public StatisticalDisableSendingDataTask(IDynamicService agentService, AgentNodeProperties agentNodeProperties, ServiceComponent serviceComponent, IServiceContext iServiceContext) {
         this.agentNodeProperties=agentNodeProperties;
         this.agentService=agentService;
         this.serviceComponent=serviceComponent;
         this.serviceContext=iServiceContext;
+        agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
     }
 
     /**
@@ -41,12 +42,24 @@ public class StatisticalDisableMetricsSendingTask implements IAgentRunnable {
         Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage();
         int r = (int) (Math.random() *100);
         if( r > percentageOfNodesSendingData ) { //if r > 10% (the large number
-            sendInfoEvent("This Agent WILL NOT be sending data, it is randomly selected to disable metrics to the controller r="+r);
+            sendInfoEvent("This Agent WILL NOT be sending data, it is randomly selected to reduce metrics and events to the controller r="+r);
             serviceComponent.getMetricHandler().getMetricService().hotDisable(); //disable all metrics
-            return;
-        } //else r <= 10%; so continue
-        sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable metrics to the controller r="+r);
-        serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
+            if( agentNodeProperties.isMaxEventsSet() ) {
+                int newMaxEvents = agentNodeProperties.getMaxEvents();
+                if( newMaxEvents > 0 ) {
+                    ReflectionHelper.setMaxEvents(serviceComponent.getEventHandler().getEventService(), newMaxEvents);
+                } else { //just turn it off
+                    serviceComponent.getEventHandler().getEventService().hotDisable(); //disable all events
+                }
+            } else {
+                sendInfoEvent("max events is not being adjusted because node property agent.statisticalSampler.maxEvents is not set [0-100]");
+            }
+        } else {//else r <= 10%; so enable everything
+            sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable sending metrics and events to the controller r=" + r);
+            serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
+            serviceComponent.getEventHandler().getEventService().hotEnable(); //enable all events again :)
+            ReflectionHelper.setMaxEvents( serviceComponent.getEventHandler().getEventService(), agentNodeProperties.getHoldMaxEvents() );
+        }
     }
 
     private void sendInfoEvent(String message) {

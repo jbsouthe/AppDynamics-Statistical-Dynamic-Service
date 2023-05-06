@@ -58,9 +58,14 @@ public class AgentNodeProperties extends Observable {
 
     public boolean isMaxEventsSet() { return this.properties.get("agent.statisticalSampler.maxEvents") != null; }
 
-    public Integer getMaxEvents() { return StringOperations.safeParseInteger((String)this.getProperty("agent.statisticalSampler.maxEvents")); }
+    public Integer getMaxEvents() {
+        int value = StringOperations.safeParseInteger((String)this.getProperty("agent.statisticalSampler.maxEvents"), 50);
+        if( value < 0 ) return 0;
+        if( value > 100 ) return 100;
+        return value;
+    }
 
-    public void setMaxEvents( int value ) { this.properties.put("agent.statisticalSampler.holdMaxEvents", String.valueOf(value)); }
+    public void setHoldMaxEvents( int value ) { this.properties.put("agent.statisticalSampler.holdMaxEvents", String.valueOf(value)); }
     public Integer getHoldMaxEvents() { return StringOperations.safeParseInteger(getProperty("agent.statisticalSampler.holdMaxEvents")); }
 
     public Integer getEnabledPercentage() {
