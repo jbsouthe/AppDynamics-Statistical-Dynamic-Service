@@ -27,6 +27,8 @@ public class ReflectionHelperTest {
         private final int maxEventSize;
 
         private TestClass(int maxEventSize) {
+            //this is critical, it matches the code i'm working against, if this was not set in the constructor
+            // the compiler may have inlined or converted the final field to a constant for optimization
             this.maxEventSize = maxEventSize;
         }
 

@@ -14,7 +14,7 @@ public class ReflectionHelper {
         try {
             Field field = eventServiceObject.getClass().getDeclaredField("maxEventSize");
             field.setAccessible(true);
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            Field modifiersField = Field.class.getDeclaredField("modifiers"); //these are private after java 1.8
             modifiersField.setAccessible(true);
             modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
             field.set(eventServiceObject, newMaxEvents);
@@ -27,7 +27,7 @@ public class ReflectionHelper {
         try {
             Field field = eventServiceObject.getClass().getDeclaredField("maxEventSize");
             field.setAccessible(true);
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            Field modifiersField = Field.class.getDeclaredField("modifiers"); //these are private after java 1.8
             modifiersField.setAccessible(true);
             modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
             return (int) field.get(eventServiceObject);
