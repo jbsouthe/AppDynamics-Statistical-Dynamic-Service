@@ -16,6 +16,10 @@ import com.singularity.ee.util.spi.AgentTimeUnit;
 import com.singularity.ee.util.spi.IAgentScheduledExecutorService;
 import com.singularity.ee.util.spi.IAgentScheduledFuture;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 public class StatisticalSamplerService implements IDynamicService {
 
     private AgentNodeProperties agentNodeProperties = new AgentNodeProperties();
@@ -75,7 +79,10 @@ public class StatisticalSamplerService implements IDynamicService {
         if (this.serviceComponent == null) {
             throw new ServiceStartException("Dagger not initialised, so cannot start the agent self upgrader service");
         }
-        this.scheduledTaskFuture = this.scheduler.scheduleWithFixedDelay(this.createTask(this.serviceComponent), this.taskInitialDelay, this.taskInterval, AgentTimeUnit.SECONDS);
+        LocalDateTime start = LocalDateTime.now();
+        LocalDateTime end = start.plusHours(1).truncatedTo(ChronoUnit.HOURS);
+        Duration duration = Duration.between(start, end);
+        this.scheduledTaskFuture = this.scheduler.scheduleWithFixedDelay(this.createTask(this.serviceComponent), duration.getSeconds(), this.taskInterval, AgentTimeUnit.SECONDS);
         this.isServiceStarted = true;
         logger.info("Started " + this.getName() + " with initial delay " + this.taskInitialDelay + ", and with interval " + this.taskInterval + " in Seconds");
 

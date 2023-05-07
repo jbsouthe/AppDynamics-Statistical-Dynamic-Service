@@ -22,6 +22,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.serviceComponent=serviceComponent;
         this.serviceContext=iServiceContext;
         agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
+        run(); //run once on init, the initial delay is used to align with the top of the hour
     }
 
     /**
