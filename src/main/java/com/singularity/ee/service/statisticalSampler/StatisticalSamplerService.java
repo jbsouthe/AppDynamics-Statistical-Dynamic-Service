@@ -23,9 +23,9 @@ import java.time.temporal.ChronoUnit;
 public class StatisticalSamplerService implements IDynamicService {
 
     private AgentNodeProperties agentNodeProperties = new AgentNodeProperties();
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.VersionSelfMonitoringService");
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.StatisticalSamplerService");
     private boolean isServiceStarted = false;
-    private IAgentScheduledFuture scheduledTaskFuture;
+    private IAgentScheduledFuture scheduledTaskFuture, scheduledMetricTaskFuture;
     private final ServiceComponent serviceComponent = LifeCycleManager.getInjector();
     private long taskInitialDelay=0;
     private long taskInterval=3600; //every hour = 60*60=3600
@@ -66,7 +66,7 @@ public class StatisticalSamplerService implements IDynamicService {
     public void start() throws ServiceStartException {
         new AgentNodePropertyListener(this);
         if(!agentNodeProperties.isEnabled()) {
-            logger.info("Service " + this.getName() + " is not enabled.  So not starting this service.  To start it enable the node property agent.upgrader.enabled");
+            logger.info("Service " + this.getName() + " is not enabled.  So not starting this service.  To start it enable the node property agent.statisticalSampler.enabled");
             return;
         }
         if( this.isServiceStarted ) {
@@ -74,22 +74,28 @@ public class StatisticalSamplerService implements IDynamicService {
             return;
         }
         if (this.scheduler == null) {
-            throw new ServiceStartException("Scheduler is not set, so unable to start the agent self upgrader service");
+            throw new ServiceStartException("Scheduler is not set, so unable to start the agent statistical sampler service");
         }
         if (this.serviceComponent == null) {
-            throw new ServiceStartException("Dagger not initialised, so cannot start the agent self upgrader service");
+            throw new ServiceStartException("Dagger not initialised, so cannot start the agent statistical sampler service");
         }
         LocalDateTime start = LocalDateTime.now();
         LocalDateTime end = start.plusHours(1).truncatedTo(ChronoUnit.HOURS);
         Duration duration = Duration.between(start, end);
-        this.scheduledTaskFuture = this.scheduler.scheduleWithFixedDelay(this.createTask(this.serviceComponent), duration.getSeconds(), this.taskInterval, AgentTimeUnit.SECONDS);
+        this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), duration.getSeconds(), this.taskInterval, AgentTimeUnit.SECONDS);
+        this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 1, AgentTimeUnit.MINUTES);
         this.isServiceStarted = true;
         logger.info("Started " + this.getName() + " with initial delay " + this.taskInitialDelay + ", and with interval " + this.taskInterval + " in Seconds");
 
     }
 
+    private IAgentRunnable createMetricTask(ServiceComponent serviceComponent) {
+        logger.info("Creating Metric Sending Task for agent statistical sampler");
+        return new StatisticalSamplerMetricTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
+    }
+
     private IAgentRunnable createTask(ServiceComponent serviceComponent) {
-        logger.info("Creating Task for agent version upgrade monitoring");
+        logger.info("Creating Task for agent statistical sampler");
         return new StatisticalDisableSendingDataTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
     }
 
@@ -107,6 +113,8 @@ public class StatisticalSamplerService implements IDynamicService {
         if (this.scheduledTaskFuture != null && !this.scheduledTaskFuture.isCancelled() && !this.scheduledTaskFuture.isDone()) {
             this.scheduledTaskFuture.cancel(true);
             this.scheduledTaskFuture = null;
+            this.scheduledMetricTaskFuture.cancel(true);
+            this.scheduledMetricTaskFuture = null;
             this.isServiceStarted = false;
             serviceComponent.getMetricHandler().getMetricService().hotEnable(); // when we stop the service, enable metrics again
             serviceComponent.getEventHandler().getEventService().hotEnable(); //enable all events again :)
@@ -116,7 +124,7 @@ public class StatisticalSamplerService implements IDynamicService {
 
     @Override
     public void hotDisable() {
-        logger.info("Disabling agent updater service");
+        logger.info("Disabling agent statistical sampler service");
         try {
             this.stop();
         }
