@@ -10,7 +10,7 @@ import com.singularity.ee.util.javaspecific.threads.IAgentRunnable;
 import java.util.Map;
 
 public class StatisticalDisableSendingDataTask implements IAgentRunnable {
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.StatisticalDisableSendingDataTask");
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.StatisticalDisableSendingDataTask");
     private IDynamicService agentService;
     private AgentNodeProperties agentNodeProperties;
     private ServiceComponent serviceComponent;
@@ -22,7 +22,6 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.serviceComponent=serviceComponent;
         this.serviceContext=iServiceContext;
         agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
-        run(); //run once on init, the initial delay is used to align with the top of the hour
     }
 
     /**
@@ -38,6 +37,10 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
      */
     @Override
     public void run() {
+        if(!agentNodeProperties.isEnabled()) {
+            logger.info("Service " + agentService.getName() + " is not enabled. To enable it enable the node property agent.statisticalSampler.enabled");
+            return;
+        }
         logger.info("Running the task to check if this node will be sending metrics or disabling that functionality");
         //1. get configured percentage of nodes that are enabled to send data
         Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage();

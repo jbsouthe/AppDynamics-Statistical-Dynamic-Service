@@ -28,7 +28,7 @@ public class StatisticalSamplerService implements IDynamicService {
     private IAgentScheduledFuture scheduledTaskFuture, scheduledMetricTaskFuture;
     private final ServiceComponent serviceComponent = LifeCycleManager.getInjector();
     private long taskInitialDelay=0;
-    private long taskInterval=3600; //every hour = 60*60=3600
+    private long taskInterval=900; //every 15 minutes
     private IAgentScheduledExecutorService scheduler;
     private IServiceContext iServiceContext;
     private IDynamicServiceManager dynamicServiceManager;
@@ -65,10 +65,6 @@ public class StatisticalSamplerService implements IDynamicService {
     @Override
     public void start() throws ServiceStartException {
         new AgentNodePropertyListener(this);
-        if(!agentNodeProperties.isEnabled()) {
-            logger.info("Service " + this.getName() + " is not enabled.  So not starting this service.  To start it enable the node property agent.statisticalSampler.enabled");
-            return;
-        }
         if( this.isServiceStarted ) {
             logger.info("Service " + this.getName() + " is already started");
             return;
@@ -79,11 +75,8 @@ public class StatisticalSamplerService implements IDynamicService {
         if (this.serviceComponent == null) {
             throw new ServiceStartException("Dagger not initialised, so cannot start the agent statistical sampler service");
         }
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end = start.plusHours(1).truncatedTo(ChronoUnit.HOURS);
-        Duration duration = Duration.between(start, end);
-        this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), duration.getSeconds(), this.taskInterval, AgentTimeUnit.SECONDS);
-        this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 1, AgentTimeUnit.MINUTES);
+        this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
+        this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 60, AgentTimeUnit.SECONDS);
         this.isServiceStarted = true;
         logger.info("Started " + this.getName() + " with initial delay " + this.taskInitialDelay + ", and with interval " + this.taskInterval + " in Seconds");
 

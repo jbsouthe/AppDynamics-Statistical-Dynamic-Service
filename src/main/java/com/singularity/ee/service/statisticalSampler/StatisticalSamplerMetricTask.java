@@ -10,7 +10,7 @@ import com.singularity.ee.util.javaspecific.threads.IAgentRunnable;
 import java.util.Map;
 
 public class StatisticalSamplerMetricTask implements IAgentRunnable {
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.StatisticalSamplerMetricTask");
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.StatisticalSamplerMetricTask");
     private IDynamicService agentService;
     private AgentNodeProperties agentNodeProperties;
     private ServiceComponent serviceComponent;

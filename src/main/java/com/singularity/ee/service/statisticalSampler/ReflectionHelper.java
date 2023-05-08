@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 public class ReflectionHelper {
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.ReflectionHelper");
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.ReflectionHelper");
 
     public static void setMaxEvents( Object eventServiceObject, int newMaxEvents ) {
         try {

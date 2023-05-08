@@ -10,14 +10,14 @@ import java.util.Map;
 import java.util.Observable;
 
 public class AgentNodeProperties extends Observable {
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.AgentNodeProperties");
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.AgentNodeProperties");
     public static final String[] NODE_PROPERTIES = new String[]{"agent.statisticalSampler.enabled", "agent.statisticalSampler.percentage", "agent.statisticalSampler.maxEvents", "agent.statisticalSampler.holdMaxEvents"};
     private final Map<String, String> properties = new HashMap<>();
 
     public void initializeConfigs(IServiceConfig serviceConfig) {
         Map configProperties = serviceConfig.getConfigProperties();
         if( configProperties != null ) {
-            boolean enabled = StringOperations.safeParseBoolean((String)((String)configProperties.get("agent.statisticalSampler.enabled")), (boolean)true);
+            boolean enabled = StringOperations.safeParseBoolean((String)((String)configProperties.get("agent.statisticalSampler.enabled")), (boolean)false);
             this.properties.put("agent.statisticalSampler.enabled", Boolean.toString(enabled));
             this.properties.put("agent.statisticalSampler.percentage", (String)configProperties.get("agent.statisticalSampler.percentage"));
             this.properties.put("agent.statisticalSampler.maxEvents", (String)configProperties.get("agent.statisticalSampler.maxEvents"));
@@ -53,7 +53,7 @@ public class AgentNodeProperties extends Observable {
     }
 
     public boolean isEnabled() {
-        return StringOperations.safeParseBoolean((String)this.getProperty("agent.statisticalSampler.enabled"), (boolean)true);
+        return StringOperations.safeParseBoolean((String)this.getProperty("agent.statisticalSampler.enabled"), (boolean)false);
     }
 
     public boolean isMaxEventsSet() { return this.properties.get("agent.statisticalSampler.maxEvents") != null; }
