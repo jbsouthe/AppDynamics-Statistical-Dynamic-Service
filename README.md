@@ -1,5 +1,5 @@
-# AppDynamics Java Agent Statistical Sampling Dynamic Service Extension
- 
+# AppDynamics Java Agent Statistical Sampling Dynamic Service Extension - The [Hoi Polloi](https://en.wikipedia.org/wiki/Hoi_polloi) Plugin!
+
 [Github Link To This Repo](https://github.com/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 
 This extension allows the AppDynamics Java Agent to decide on startup whether or not it should send metrics to the controller. In very large tiers, this data is not needed because a sample can be used to estimate actual metrics and support higher agent loads.
