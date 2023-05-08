@@ -50,7 +50,7 @@ the < agent intall dir >/ver22.###/conf/app-agent-config.xml at line 120 has to 
 Custom node properties control these activities. Setting the <B>"agent.statisticalSampler.enabled"</B> node property to true will enable this service, when this service is disabled it will enable metrics collection as it removes itself. 
 Setting the node property <B>"agent.statisticalSampler.percentage"</B> to an integer between 1 and 99 will set the percentage of nodes enabled to send metrics as part of this statistical sample.
 
-![Node Property Example](doc-images/AgentUpdaterNodeProperties.png)
+![Node Property Example](doc-images/AgentNodeProperties.png)
 
 ## How to Monitor what it is doing
 
