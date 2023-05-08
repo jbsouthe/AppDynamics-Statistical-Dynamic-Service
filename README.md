@@ -5,7 +5,7 @@
 
 This extension allows the AppDynamics Java Agent to decide on startup whether or not it should send metrics to the controller. In very large tiers, this data is not needed because a sample can be used to estimate actual metrics and support higher agent loads.
 
-[crude diagram](doc-images/overview.png)
+![crude diagram](doc-images/overview.png)
 
 This plugin is in BETA and not supported by AppDynamics, please report any issues to this github repository and our team will respond as soon as possible.
 Thanks, John
