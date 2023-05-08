@@ -5,6 +5,8 @@
 
 This extension allows the AppDynamics Java Agent to decide on startup whether or not it should send metrics to the controller. In very large tiers, this data is not needed because a sample can be used to estimate actual metrics and support higher agent loads.
 
+[crude diagram](doc-images/overview.png)
+
 This plugin is in BETA and not supported by AppDynamics, please report any issues to this github repository and our team will respond as soon as possible.
 Thanks, John
 
@@ -14,7 +16,7 @@ The agent dynamic service needs to be installed and then node properties from th
 setting the following will cause it to perform the updates. The service will run and check for upgrades every 3 minutes, so when changing these parameters make sure to allow time to see execution.
 
     "agent.statisticalSampler.enabled" - boolean, setting this to true causes this service to come alive
-    "agent.statisticalSampler.percentage" - the percentage of agents sending data, recommended 10%, as an int 1-90, if higher than 90 we will select 90, if lower than 1 we set to 1
+    "agent.statisticalSampler.percentage" - the percentage of agents sending data, recommended 10%, as an int 1-99, if higher than 99 we will select 99, if lower than 1 we set to 1
     "agent.statisticalSampler.maxEvents" - when chance dictates, set max events to this new value, 0 disables events, otherwise it sets it to the new value
 
 Once enabled, it will determine randomly if the agent should enable metrics, and then it will run every hour and decide once again whether it will continue to disable/enable metrics and randomly make the decision again.
