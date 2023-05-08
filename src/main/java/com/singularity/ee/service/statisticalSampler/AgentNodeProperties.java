@@ -11,7 +11,7 @@ import java.util.Observable;
 
 public class AgentNodeProperties extends Observable {
     private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.AgentNodeProperties");
-    public static final String[] NODE_PROPERTIES = new String[]{"agent.statisticalSampler.enabled", "agent.statisticalSampler.percentage", "agent.statisticalSampler.maxEvents", "agent.statisticalSampler.holdMaxEvents"};
+    public static final String[] NODE_PROPERTIES = new String[]{"agent.statisticalSampler.enabled", "agent.statisticalSampler.percentage", "agent.statisticalSampler.maxEvents", "agent.statisticalSampler.holdMaxEvents", "agent.statisticalSampler.isMetricThrottled", "agent.statisticalSampler.isEventThrottled"};
     private final Map<String, String> properties = new HashMap<>();
 
     public void initializeConfigs(IServiceConfig serviceConfig) {
@@ -75,4 +75,8 @@ public class AgentNodeProperties extends Observable {
         return value;
     }
 
+    public void setMetricThrottled( boolean b ) { this.properties.put("agent.statisticalSampler.isMetricThrottled", String.valueOf(b)); }
+    public boolean isMetricThrottled() { return StringOperations.safeParseBoolean( this.properties.get("agent.statisticalSampler.isMetricThrottled"), false); }
+    public void setEventThrottled( boolean b ) { this.properties.put("agent.statisticalSampler.isEventThrottled", String.valueOf(b)); }
+    public boolean isEventThrottled() { return StringOperations.safeParseBoolean( this.properties.get("agent.statisticalSampler.isEventThrottled"), false); }
 }

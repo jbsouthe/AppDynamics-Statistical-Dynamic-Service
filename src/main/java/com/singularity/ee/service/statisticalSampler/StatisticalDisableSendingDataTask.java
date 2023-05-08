@@ -48,6 +48,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         if( r > percentageOfNodesSendingData ) { //if r > 10% (the large number
             sendInfoEvent("This Agent WILL NOT be sending data, it is randomly selected to reduce metrics and events to the controller r="+r);
             serviceComponent.getMetricHandler().getMetricService().hotDisable(); //disable all metrics
+            agentNodeProperties.setMetricThrottled(true);
             if( agentNodeProperties.isMaxEventsSet() ) {
                 int newMaxEvents = agentNodeProperties.getMaxEvents();
                 if( newMaxEvents > 0 ) {
@@ -55,6 +56,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
                 } else { //just turn it off
                     serviceComponent.getEventHandler().getEventService().hotDisable(); //disable all events
                 }
+                agentNodeProperties.setEventThrottled(true);
             } else {
                 sendInfoEvent("max events is not being adjusted because node property agent.statisticalSampler.maxEvents is not set [0-100]");
             }
@@ -63,6 +65,8 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
             serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
             serviceComponent.getEventHandler().getEventService().hotEnable(); //enable all events again :)
             ReflectionHelper.setMaxEvents( serviceComponent.getEventHandler().getEventService(), agentNodeProperties.getHoldMaxEvents() );
+            agentNodeProperties.setEventThrottled(false);
+            agentNodeProperties.setMetricThrottled(false);
         }
     }
 

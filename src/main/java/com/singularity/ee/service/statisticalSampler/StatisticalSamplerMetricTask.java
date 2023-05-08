@@ -37,6 +37,11 @@ public class StatisticalSamplerMetricTask implements IAgentRunnable {
     @Override
     public void run() {
         serviceComponent.getMetricHandler().reportAverageMetric("Agent|Statistical Sampler|Enabled Percentage", agentNodeProperties.getEnabledPercentage());
+        serviceComponent.getMetricHandler().reportAverageMetric("Agent|Statistical Sampler|Sampling Enabled", (agentNodeProperties.isEnabled() ? 1 : 0) );
+        serviceComponent.getMetricHandler().reportAverageMetric("Agent|Statistical Sampler|Metrics Enabled", (agentNodeProperties.isMetricThrottled() ? 0 : 1) );
+        serviceComponent.getMetricHandler().reportAverageMetric("Agent|Statistical Sampler|Throttled Max Events", agentNodeProperties.getMaxEvents());
+        serviceComponent.getMetricHandler().reportAverageMetric("Agent|Statistical Sampler|Natural Max Events", agentNodeProperties.getHoldMaxEvents());
+        serviceComponent.getMetricHandler().reportAverageMetric("Agent|Statistical Sampler|Events Enabled", (agentNodeProperties.isEventThrottled() ? 0 : 1));
     }
 
     private void sendInfoEvent(String message) {
