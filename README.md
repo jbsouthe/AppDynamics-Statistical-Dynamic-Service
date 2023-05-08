@@ -16,7 +16,7 @@ The agent dynamic service needs to be installed and then node properties from th
 setting the following will cause it to perform the updates. The service will run and check for upgrades every 3 minutes, so when changing these parameters make sure to allow time to see execution.
 
     "agent.statisticalSampler.enabled" - boolean, setting this to true causes this service to come alive
-    "agent.statisticalSampler.percentage" - the percentage of agents sending data, recommended 10%, as an int 1-99, if higher than 99 we will select 99, if lower than 1 we set to 1
+    "agent.statisticalSampler.percentage" - the percentage of agents sending data, recommended 10%, as an int 1-100, if higher than 100 we will select 100 (this effectively disables statistical sampling, without disabling the plugin), if lower than 1 we set to 1
     "agent.statisticalSampler.maxEvents" - when chance dictates, set max events to this new value, 0 disables events, otherwise it sets it to the new value
 
 Once enabled, it will determine randomly if the agent should enable metrics, and then it will run every hour and decide once again whether it will continue to disable/enable metrics and randomly make the decision again.
@@ -51,6 +51,8 @@ Custom node properties control these activities. Setting the <B>"agent.statistic
 Setting the node property <B>"agent.statisticalSampler.percentage"</B> to an integer between 1 and 99 will set the percentage of nodes enabled to send metrics as part of this statistical sample.
 
 ![Node Property Example](doc-images/AgentNodeProperties.png)
+
+note: this percentage of 99, is so high that the nodes will barely be using this, try not to set your target this high, this example was for testing. 10% is the recommended level.
 
 ## How to Monitor what it is doing
 

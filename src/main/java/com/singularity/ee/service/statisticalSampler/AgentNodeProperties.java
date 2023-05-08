@@ -21,7 +21,6 @@ public class AgentNodeProperties extends Observable {
             this.properties.put("agent.statisticalSampler.enabled", Boolean.toString(enabled));
             this.properties.put("agent.statisticalSampler.percentage", (String)configProperties.get("agent.statisticalSampler.percentage"));
             this.properties.put("agent.statisticalSampler.maxEvents", (String)configProperties.get("agent.statisticalSampler.maxEvents"));
-            //this.properties.put("agent.statisticalSampler.holdMaxEvents", (String)configProperties.get("agent.statisticalSampler.holdMaxEvents"));
             logger.info("Initializing the properties " + this);
         } else {
             logger.error("Config properties map is null?!?!");
@@ -71,7 +70,7 @@ public class AgentNodeProperties extends Observable {
     public Integer getEnabledPercentage() {
         int value = StringOperations.safeParseInteger(this.properties.get("agent.statisticalSampler.percentage"), 10 );
         if( value < 1 ) return 1;
-        if( value > 99 ) return 99;
+        if( value > 100 ) return 100;
         return value;
     }
 
