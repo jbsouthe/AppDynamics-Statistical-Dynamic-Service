@@ -48,3 +48,13 @@ Custom node properties control these activities. Setting the <B>"agent.statistic
 Setting the node property <B>"agent.statisticalSampler.percentage"</B> to an integer between 1 and 99 will set the percentage of nodes enabled to send metrics as part of this statistical sample.
 
 ![Node Property Example](doc-images/AgentUpdaterNodeProperties.png)
+
+## How to Monitor what it is doing
+
+The new service will publish metrics, if not being throttled, to the controller under the Agent metrics. In the future every agent will continue to publish these basic metrics, but for today we are just shutting off all metrics including these ones, so only the agents not being stopped will report them.
+
+![Metric Browser of Application Infrastructure Performance|Tier|Agent|Statistical Sampler|Enabled Percentage](doc-images/AgentStatisticalMetrics.png)
+
+Additionally, when the service calculates whether or not a node will be sending events and metrics it will attempt to send an event informing of change in status, just as metrics this will one day filter out all but critical events, today it will shut off all events.
+
+![Example Events](doc-images/ExampleEvents.png)
