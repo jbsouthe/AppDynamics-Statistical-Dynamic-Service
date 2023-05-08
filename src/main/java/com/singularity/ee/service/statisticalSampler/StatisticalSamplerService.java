@@ -23,7 +23,7 @@ import java.time.temporal.ChronoUnit;
 public class StatisticalSamplerService implements IDynamicService {
 
     private AgentNodeProperties agentNodeProperties = new AgentNodeProperties();
-    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.ee.service.statisticalSampler.StatisticalSamplerService");
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.StatisticalSamplerService");
     private boolean isServiceStarted = false;
     private IAgentScheduledFuture scheduledTaskFuture, scheduledMetricTaskFuture;
     private final ServiceComponent serviceComponent = LifeCycleManager.getInjector();
@@ -34,8 +34,8 @@ public class StatisticalSamplerService implements IDynamicService {
     private IDynamicServiceManager dynamicServiceManager;
 
     public StatisticalSamplerService() {
-        logger.info(String.format("Initializing Agent Statistical Sampler Service %s build date %s by %s visit %s for the most up to date information.",
-                MetaData.VERSION, MetaData.BUILDTIMESTAMP, MetaData.GECOS, MetaData.DEVNET));
+        logger.info(String.format("Initializing Agent %s %s build date %s by %s visit %s for the most up to date information.",
+                MetaData.SERVICENAME, MetaData.VERSION, MetaData.BUILDTIMESTAMP, MetaData.GECOS, MetaData.DEVNET));
     }
 
     public StatisticalSamplerService(AgentNodeProperties agentNodeProperties, long taskInitialDelay, long taskInterval) {
@@ -47,7 +47,7 @@ public class StatisticalSamplerService implements IDynamicService {
 
     @Override
     public String getName() {
-        return this.getClass().getName();
+        return MetaData.SERVICENAME;
     }
 
     @Override
@@ -66,14 +66,14 @@ public class StatisticalSamplerService implements IDynamicService {
     public void start() throws ServiceStartException {
         new AgentNodePropertyListener(this);
         if( this.isServiceStarted ) {
-            logger.info("Service " + this.getName() + " is already started");
+            logger.info("Agent " + this.getName() + " is already started");
             return;
         }
         if (this.scheduler == null) {
-            throw new ServiceStartException("Scheduler is not set, so unable to start the agent statistical sampler service");
+            throw new ServiceStartException("Scheduler is not set, so unable to start the "+ MetaData.SERVICENAME);
         }
         if (this.serviceComponent == null) {
-            throw new ServiceStartException("Dagger not initialised, so cannot start the agent statistical sampler service");
+            throw new ServiceStartException("Dagger not initialised, so cannot start the "+ MetaData.SERVICENAME);
         }
         this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
         this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 60, AgentTimeUnit.SECONDS);
@@ -83,12 +83,12 @@ public class StatisticalSamplerService implements IDynamicService {
     }
 
     private IAgentRunnable createMetricTask(ServiceComponent serviceComponent) {
-        logger.info("Creating Metric Sending Task for agent statistical sampler");
+        logger.info("Creating Metric Sending Task for "+ MetaData.SERVICENAME);
         return new StatisticalSamplerMetricTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
     }
 
     private IAgentRunnable createTask(ServiceComponent serviceComponent) {
-        logger.info("Creating Task for agent statistical sampler");
+        logger.info("Creating Task for "+ MetaData.SERVICENAME);
         return new StatisticalDisableSendingDataTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
     }
 
@@ -117,7 +117,7 @@ public class StatisticalSamplerService implements IDynamicService {
 
     @Override
     public void hotDisable() {
-        logger.info("Disabling agent statistical sampler service");
+        logger.info("Disabling "+ MetaData.SERVICENAME);
         try {
             this.stop();
         }
@@ -128,7 +128,7 @@ public class StatisticalSamplerService implements IDynamicService {
 
     @Override
     public void hotEnable() {
-        logger.info("Enabling agent updater service");
+        logger.info("Enabling "+ MetaData.SERVICENAME);
         try {
             this.start();
         }
