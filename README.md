@@ -6,7 +6,7 @@
 This extension allows the AppDynamics Java Agent to decide on startup whether it should send metrics to the controller.
 In very large tiers, this data can be represented using a smaller collection of the similar sourced population data to represent the actual merits and support higher loads
 In tiers with 100 or more agents, the metrics reported are usually very similar in definition and volume, this means we are ingesting duplicate data that is not significantly different per node.
-To handle this more elegantly, this plugin proposes to disable a large number of nodes in the total population and instead calculate the metric values from the smaller size of nodes.
+To handle this more elegantly, this plugin proposes to reduce metric collection on a subset of nodes, without impacting APM
 In a hypothetical population of 1000 nodes, if we select a percentage of 10% to send data, we can take the data received and multiply it by 100/10 == 10 to calculate the missing data through linear extrapolation. 
 
 ![crude diagram](doc-images/overview.png)
