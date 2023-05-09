@@ -1,12 +1,12 @@
-# AppDynamics Java Agent Statistical Sampling Dynamic Service Extension - The [Hoi Polloi](https://en.wikipedia.org/wiki/Hoi_polloi) Plugin!
+# AppDynamics Java Agent Statistical Reduction Dynamic Service Extension - The [Hoi Polloi](https://en.wikipedia.org/wiki/Hoi_polloi) Plugin!
 
 [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 [Github Link To This Repo](https://github.com/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 
 This extension allows the AppDynamics Java Agent to decide on startup whether it should send metrics to the controller. 
-In very large tiers, this data is not needed because a sample can be used to estimate actual metrics and support higher agent loads.
+In very large tiers, this data is not needed because a smaller group of nodes can be used to estimate actual metrics and support higher agent loads.
 In tiers with 100 or more agents, the metrics reported are usually very similar in definition and volume, this means we are ingesting duplicate data that is not significantly different per node.
-To handle this more elegantly, this plugin proposes to disable a large number of nodes in the total population and instead calculate the metric values from the smaller sample size of nodes.
+To handle this more elegantly, this plugin proposes to disable a large number of nodes in the total population and instead calculate the metric values from the smaller size of nodes.
 In a hypothetical population of 1000 nodes, if we select a percentage of 10% to send data, we can take the data received and multiply it by 100/10 == 10 to calculate the missing data through linear extrapolation. 
 
 ![crude diagram](doc-images/overview.png)
@@ -51,7 +51,7 @@ the < agent intall dir >/ver22.###/conf/app-agent-config.xml at line 120 has to 
 ## How to "do it"
 
 Custom node properties control these activities. Setting the <B>"agent.statisticalSampler.enabled"</B> node property to true will enable this service, when this service is disabled it will enable metrics collection as it removes itself. 
-Setting the node property <B>"agent.statisticalSampler.percentage"</B> to an integer between 1 and 99 will set the percentage of nodes enabled to send metrics as part of this statistical sample.
+Setting the node property <B>"agent.statisticalSampler.percentage"</B> to an integer between 1 and 99 will set the percentage of nodes enabled to send metrics as part of this statistical set.
 
 ![Node Property Example](doc-images/AgentNodeProperties.png)
 
