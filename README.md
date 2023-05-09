@@ -3,8 +3,8 @@
 [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 [Github Link To This Repo](https://github.com/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 
-This extension allows the AppDynamics Java Agent to decide on startup whether it should send metrics to the controller. 
-In very large tiers, this data is not needed because a smaller group of nodes can be used to estimate actual metrics and support higher agent loads.
+This extension allows the AppDynamics Java Agent to decide on startup whether it should send metrics to the controller.
+In very large tiers, this data can be represented using a smaller collection of the similar sourced population data to represent the actual merits and support higher loads
 In tiers with 100 or more agents, the metrics reported are usually very similar in definition and volume, this means we are ingesting duplicate data that is not significantly different per node.
 To handle this more elegantly, this plugin proposes to disable a large number of nodes in the total population and instead calculate the metric values from the smaller size of nodes.
 In a hypothetical population of 1000 nodes, if we select a percentage of 10% to send data, we can take the data received and multiply it by 100/10 == 10 to calculate the missing data through linear extrapolation. 
