@@ -16,6 +16,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
     private ServiceComponent serviceComponent;
     private IServiceContext serviceContext;
     private long lastDeterminationTimestamp, determinationIntervalInMilliseconds;
+    private boolean isEnabled;
 
     public StatisticalDisableSendingDataTask(IDynamicService agentService, AgentNodeProperties agentNodeProperties, ServiceComponent serviceComponent, IServiceContext iServiceContext) {
         this.agentNodeProperties=agentNodeProperties;
@@ -24,6 +25,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.serviceContext=iServiceContext;
         agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
         this.lastDeterminationTimestamp=0;
+        isEnabled=false;
     }
 
     /**
@@ -39,8 +41,16 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
      */
     @Override
     public void run() {
-        if( !agentNodeProperties.isEnabled() || System.currentTimeMillis() < this.lastDeterminationTimestamp + (agentNodeProperties.getDecisionDuration()*1000) ) return; //only run this every 15 minutes, ish
+        if( this.isEnabled && !agentNodeProperties.isEnabled() ) { // this has just been disabled, so let the metrics and events flow
+            enableEverything();
+            this.isEnabled=false; // reset the trigger
+            return;
+        }
+        if( !agentNodeProperties.isEnabled() ||
+                System.currentTimeMillis() < this.lastDeterminationTimestamp + (agentNodeProperties.getDecisionDuration()*1000) )
+            return; //only run this every 15 minutes, ish
         logger.info("Running the task to check if this node will be sending metrics or disabling that functionality");
+        this.isEnabled=true;
         //1. get configured percentage of nodes that are enabled to send data
         Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage();
         int r = (int) (Math.random() *100);
