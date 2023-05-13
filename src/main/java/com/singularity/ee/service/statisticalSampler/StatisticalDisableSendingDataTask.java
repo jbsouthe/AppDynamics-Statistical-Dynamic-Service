@@ -15,6 +15,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
     private AgentNodeProperties agentNodeProperties;
     private ServiceComponent serviceComponent;
     private IServiceContext serviceContext;
+    private long lastDeterminationTimestamp, determinationIntervalInMilliseconds;
 
     public StatisticalDisableSendingDataTask(IDynamicService agentService, AgentNodeProperties agentNodeProperties, ServiceComponent serviceComponent, IServiceContext iServiceContext) {
         this.agentNodeProperties=agentNodeProperties;
@@ -22,6 +23,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.serviceComponent=serviceComponent;
         this.serviceContext=iServiceContext;
         agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
+        this.lastDeterminationTimestamp=0;
     }
 
     /**
@@ -37,10 +39,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
      */
     @Override
     public void run() {
-        if(!agentNodeProperties.isEnabled()) {
-            logger.info("Service " + agentService.getName() + " is not enabled. To enable it enable the node property agent.statisticalSampler.enabled");
-            return;
-        }
+        if( !agentNodeProperties.isEnabled() || System.currentTimeMillis() < this.lastDeterminationTimestamp + (agentNodeProperties.getDecisionDuration()*1000) ) return; //only run this every 15 minutes, ish
         logger.info("Running the task to check if this node will be sending metrics or disabling that functionality");
         //1. get configured percentage of nodes that are enabled to send data
         Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage();
@@ -62,12 +61,17 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
             }
         } else {//else r <= 10%; so enable everything
             sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable sending metrics and events to the controller r=" + r);
-            serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
-            serviceComponent.getEventHandler().getEventService().hotEnable(); //enable all events again :)
-            ReflectionHelper.setMaxEvents( serviceComponent.getEventHandler().getEventService(), agentNodeProperties.getHoldMaxEvents() );
-            agentNodeProperties.setEventThrottled(false);
-            agentNodeProperties.setMetricThrottled(false);
+            enableEverything();
         }
+        this.lastDeterminationTimestamp = System.currentTimeMillis();
+    }
+
+    public void enableEverything() {
+        serviceComponent.getMetricHandler().getMetricService().hotEnable(); //enable all metrics again :)
+        serviceComponent.getEventHandler().getEventService().hotEnable(); //enable all events again :)
+        ReflectionHelper.setMaxEvents( serviceComponent.getEventHandler().getEventService(), agentNodeProperties.getHoldMaxEvents() );
+        agentNodeProperties.setEventThrottled(false);
+        agentNodeProperties.setMetricThrottled(false);
     }
 
     private void sendInfoEvent(String message) {

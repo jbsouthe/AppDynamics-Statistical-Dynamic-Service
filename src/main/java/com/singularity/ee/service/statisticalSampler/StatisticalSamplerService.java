@@ -26,9 +26,10 @@ public class StatisticalSamplerService implements IDynamicService {
     private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.StatisticalSamplerService");
     private boolean isServiceStarted = false;
     private IAgentScheduledFuture scheduledTaskFuture, scheduledMetricTaskFuture;
+    private StatisticalDisableSendingDataTask statisticalDisableSendingDataTask;
     private final ServiceComponent serviceComponent = LifeCycleManager.getInjector();
     private long taskInitialDelay=0;
-    private long taskInterval=900; //every 15 minutes
+    private long taskInterval=60; //every 1 minute, with the task itself only randomly deciding every 15 mintues
     private IAgentScheduledExecutorService scheduler;
     private IServiceContext iServiceContext;
     private IDynamicServiceManager dynamicServiceManager;
@@ -76,7 +77,7 @@ public class StatisticalSamplerService implements IDynamicService {
             throw new ServiceStartException("Dagger not initialised, so cannot start the "+ MetaData.SERVICENAME);
         }
         this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
-        this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 60, AgentTimeUnit.SECONDS);
+        this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
         this.isServiceStarted = true;
         logger.info("Started " + this.getName() + " with initial delay " + this.taskInitialDelay + ", and with interval " + this.taskInterval + " in Seconds");
 
@@ -89,7 +90,8 @@ public class StatisticalSamplerService implements IDynamicService {
 
     private IAgentRunnable createTask(ServiceComponent serviceComponent) {
         logger.info("Creating Task for "+ MetaData.SERVICENAME);
-        return new StatisticalDisableSendingDataTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
+        this.statisticalDisableSendingDataTask = new StatisticalDisableSendingDataTask( this, this.agentNodeProperties, serviceComponent, iServiceContext);
+        return statisticalDisableSendingDataTask;
     }
 
     @Override
@@ -104,14 +106,12 @@ public class StatisticalSamplerService implements IDynamicService {
             return;
         }
         if (this.scheduledTaskFuture != null && !this.scheduledTaskFuture.isCancelled() && !this.scheduledTaskFuture.isDone()) {
+            if( this.statisticalDisableSendingDataTask != null ) this.statisticalDisableSendingDataTask.enableEverything();
             this.scheduledTaskFuture.cancel(true);
             this.scheduledTaskFuture = null;
             this.scheduledMetricTaskFuture.cancel(true);
             this.scheduledMetricTaskFuture = null;
             this.isServiceStarted = false;
-            serviceComponent.getMetricHandler().getMetricService().hotEnable(); // when we stop the service, enable metrics again
-            serviceComponent.getEventHandler().getEventService().hotEnable(); //enable all events again :)
-            ReflectionHelper.setMaxEvents( serviceComponent.getEventHandler().getEventService(), agentNodeProperties.getHoldMaxEvents() );
         }
     }
 
