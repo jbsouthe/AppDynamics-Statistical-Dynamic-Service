@@ -26,13 +26,15 @@ setting the following will cause it to perform the updates. The service will run
 Once enabled, it will determine randomly if the agent should enable metrics, and then it will run every "agent.statisticalSampler.decisionDurationMinutes" and decide once again whether it will continue to disable/enable metrics and randomly make the decision again.
 The logic of this is:
 
-    Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage(); //assume this is 10% for the examples in the logic below
-    int r = (int) (Math.random() *100);
-    if( r > percentageOfNodesSendingData ) { //if r > 10% (the large number)
-        Disable Metrics and Events for this node
-    } else {//else r <= 10%; so continue
-        Enable Full Metrics and Events for this node
-	}
+```java
+Integer percentageOfNodesSendingData = agentNodeProperties.getEnabledPercentage(); //assume this is 10% for the examples in the logic below
+int r = (int) (Math.random() *100);
+if( r > percentageOfNodesSendingData ) { //if r > 10% (the large number)
+    Disable Metrics and Events for this node
+} else {//else r <= 10%; so continue
+    Enable Full Metrics and Events for this node
+}
+```
 
 ## Installation - You only have to do this once
 
