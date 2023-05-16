@@ -60,8 +60,6 @@ Setting the node property <B>"agent.statisticalSampler.percentage"</B> to an int
 
 ![Node Property Example](doc-images/AgentNodeProperties.png)
 
-note: this percentage of 99, is so high that the nodes will barely be using this, try not to set your target this high, this example was for testing. 10% is the recommended level.
-
 ## How to Monitor what it is doing
 
 The new service will publish metrics, if not being throttled, to the controller under the Agent metrics. In the future every agent will continue to publish these basic metrics, but for today we are just shutting off all metrics including these ones, so only the agents not being stopped will report them.
