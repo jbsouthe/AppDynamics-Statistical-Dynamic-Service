@@ -11,6 +11,10 @@ In a hypothetical population of 1000 nodes, if we select a percentage of 10% to 
 
 ![explanation diagram](doc-images/overview.png)
 
+When enabled, in this example, only about 10 percent of the nodes will continue to send there data
+
+![reduced metrics uploaded](doc-images/MetricsUploaded.png)
+
 This plugin is in BETA and not supported by AppDynamics, please report any issues to this github repository and our team will respond as soon as possible.
 
 ## Theory of Operation "how does it work"
@@ -63,6 +67,10 @@ note: this percentage of 99, is so high that the nodes will barely be using this
 The new service will publish metrics, if not being throttled, to the controller under the Agent metrics. In the future every agent will continue to publish these basic metrics, but for today we are just shutting off all metrics including these ones, so only the agents not being stopped will report them.
 
 ![Metric Browser of Application Infrastructure Performance|Tier|Agent|Statistical Sampler|Enabled Percentage](doc-images/AgentStatisticalMetrics.png)
+
+When the plugin is enabled, via node properties, you will see the Metrics Enabled count change, and the Sampling enabled turn on by changing from 0 to 1. As below.
+
+![Metric Browser of Statistical plugin metrics](doc-images/metricsEnabledAndSamplingEnabled.png)
 
 Additionally, when the service calculates whether or not a node will be sending events and metrics it will attempt to send an event informing of change in status, just as metrics this will one day filter out all but critical events, today it will shut off all events.
 
