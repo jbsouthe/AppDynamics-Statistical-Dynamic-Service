@@ -9,16 +9,16 @@ import com.singularity.ee.agent.appagent.kernel.spi.data.IServiceConfig;
 import com.singularity.ee.agent.appagent.kernel.spi.exception.ConfigException;
 import com.singularity.ee.agent.appagent.kernel.spi.exception.ServiceStartException;
 import com.singularity.ee.agent.appagent.kernel.spi.exception.ServiceStopException;
+import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.SumMetricAggregator;
+import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.AgentRawMetricIdentifier;
+import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.IMetricReporterFactory;
+import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.MetricAggregatorType;
 import com.singularity.ee.agent.util.log4j.ADLoggerFactory;
 import com.singularity.ee.agent.util.log4j.IADLogger;
 import com.singularity.ee.util.javaspecific.threads.IAgentRunnable;
 import com.singularity.ee.util.spi.AgentTimeUnit;
 import com.singularity.ee.util.spi.IAgentScheduledExecutorService;
 import com.singularity.ee.util.spi.IAgentScheduledFuture;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 public class StatisticalSamplerService implements IDynamicService {
 
@@ -112,6 +112,11 @@ public class StatisticalSamplerService implements IDynamicService {
             this.scheduledMetricTaskFuture.cancel(true);
             this.scheduledMetricTaskFuture = null;
             this.isServiceStarted = false;
+        }
+        IMetricReporterFactory iMetricReporterFactory = serviceComponent.getMetricHandler().getAggregatorFactory();
+        for ( AgentRawMetricIdentifier agentRawMetricIdentifier : iMetricReporterFactory.getRegisteredMetrics() ) {
+            if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM))
+                iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new SumMetricAggregator());
         }
     }
 

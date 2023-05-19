@@ -3,6 +3,10 @@ package com.singularity.ee.service.statisticalSampler;
 import com.singularity.ee.agent.appagent.kernel.ServiceComponent;
 import com.singularity.ee.agent.appagent.kernel.spi.IDynamicService;
 import com.singularity.ee.agent.appagent.kernel.spi.IServiceContext;
+import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.SumMetricAggregator;
+import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.AgentRawMetricIdentifier;
+import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.IMetricReporterFactory;
+import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.MetricAggregatorType;
 import com.singularity.ee.agent.util.log4j.ADLoggerFactory;
 import com.singularity.ee.agent.util.log4j.IADLogger;
 import com.singularity.ee.util.javaspecific.threads.IAgentRunnable;
@@ -15,7 +19,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
     private AgentNodeProperties agentNodeProperties;
     private ServiceComponent serviceComponent;
     private IServiceContext serviceContext;
-    private long lastDeterminationTimestamp, determinationIntervalInMilliseconds;
+    private long lastDeterminationTimestamp=0, lastMetricAggregatorRegistration=0;
     private boolean isEnabled;
 
     public StatisticalDisableSendingDataTask(IDynamicService agentService, AgentNodeProperties agentNodeProperties, ServiceComponent serviceComponent, IServiceContext iServiceContext) {
@@ -24,7 +28,6 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.serviceComponent=serviceComponent;
         this.serviceContext=iServiceContext;
         agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
-        this.lastDeterminationTimestamp=0;
         isEnabled=false;
     }
 
@@ -71,6 +74,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
             }
         } else {//else r <= 10%; so enable everything
             sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable sending metrics and events to the controller r=" + r);
+            registerExtrapolationSumAggregators();
             enableEverything();
         }
         this.lastDeterminationTimestamp = System.currentTimeMillis();
@@ -93,5 +97,20 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         if( !map.containsKey("statisticalSampler-version") ) map.putAll(MetaData.getAsMap());
         serviceComponent.getEventHandler().publishInfoEvent(message, map);
     }
-    
+
+    private void registerOriginalSumAggregators() {
+        IMetricReporterFactory iMetricReporterFactory = serviceComponent.getMetricHandler().getAggregatorFactory();
+        for ( AgentRawMetricIdentifier agentRawMetricIdentifier : iMetricReporterFactory.getRegisteredMetrics() ) {
+            if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM))
+                iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new SumMetricAggregator());
+        }
+    }
+
+    private void registerExtrapolationSumAggregators() {
+        IMetricReporterFactory iMetricReporterFactory = serviceComponent.getMetricHandler().getAggregatorFactory();
+        for ( AgentRawMetricIdentifier agentRawMetricIdentifier : iMetricReporterFactory.getRegisteredMetrics() ) {
+            if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM))
+                iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new ExtrapolatedSumMetricAggregator(agentNodeProperties));
+        }
+    }
 }
