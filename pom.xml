@@ -53,11 +53,6 @@
             <systemPath>${project.basedir}/lib/javaagent-v22.8.0.34104.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.9.0</version>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>RELEASE</version>
