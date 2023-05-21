@@ -44,13 +44,15 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
      */
     @Override
     public void run() {
+        logger.debug(String.format("Task Running this.isEnabled=%s agentNodeProperties.isEnabled()=%s",this.isEnabled, agentNodeProperties.isEnabled()));
         if( this.isEnabled && !agentNodeProperties.isEnabled() ) { // this has just been disabled, so let the metrics and events flow
             enableEverything();
             this.isEnabled=false; // reset the trigger
             return;
         }
+        logger.debug(String.format("agentNodeProperties.isEnabled()=%s this.lastDeterminationTimestamp=%d", agentNodeProperties.isEnabled(),this.lastDeterminationTimestamp));
         if( !agentNodeProperties.isEnabled() ||
-                System.currentTimeMillis() < this.lastDeterminationTimestamp + (agentNodeProperties.getDecisionDuration()*1000) )
+                System.currentTimeMillis() < this.lastDeterminationTimestamp + (agentNodeProperties.getDecisionDuration()*60000) )
             return; //only run this every 15 minutes, ish
         logger.info("Running the task to check if this node will be sending metrics or disabling that functionality");
         this.isEnabled=true;
@@ -109,8 +111,13 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
     private void registerExtrapolationSumAggregators() {
         IMetricReporterFactory iMetricReporterFactory = serviceComponent.getMetricHandler().getAggregatorFactory();
         for ( AgentRawMetricIdentifier agentRawMetricIdentifier : iMetricReporterFactory.getRegisteredMetrics() ) {
-            if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM))
-                iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new ExtrapolatedSumMetricAggregator(agentNodeProperties));
+            if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM)
+                && !agentRawMetricIdentifier.getName().startsWith("Agent|")) {
+                    logger.debug(String.format("Updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
+                    iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new ExtrapolatedSumMetricAggregator( agentRawMetricIdentifier.getName(), agentNodeProperties));
+            } else {
+                logger.trace(String.format("Not updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
+            }
         }
     }
 }

@@ -3,18 +3,23 @@ package com.singularity.ee.service.statisticalSampler;
 
 import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.AMetricAggregator;
 import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.MetricAggregatorType;
+import com.singularity.ee.agent.util.log4j.ADLoggerFactory;
+import com.singularity.ee.agent.util.log4j.IADLogger;
 import com.singularity.ee.controller.api.dto.RawMetricValue;
 import com.singularity.ee.util.javaspecific.atomic.AgentAtomicLongImpl;
 import com.singularity.ee.util.spi.IAgentAtomicLong;
 
 public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
+    private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.ExtrapolatedSumMetricAggregator");
 
     private final IAgentAtomicLong sum = new AgentAtomicLongImpl(0L);
     private final IAgentAtomicLong lastAggregatedValue = new AgentAtomicLongImpl(0L);
     private AgentNodeProperties agentNodeProperties;
+    private String metricName;
 
-    public ExtrapolatedSumMetricAggregator(AgentNodeProperties agentNodeProperties ) {
+    public ExtrapolatedSumMetricAggregator(String metricName, AgentNodeProperties agentNodeProperties ) {
         this.agentNodeProperties=agentNodeProperties;
+        this.metricName=metricName;
     }
 
     public MetricAggregatorType getType() {
@@ -24,8 +29,10 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
     protected void _report(long value) {
         this.setAsChanged();
         if( agentNodeProperties.isEnabled() ) {
+            long orig=value;
             int percent = agentNodeProperties.getEnabledPercentage();
             value *= 100/agentNodeProperties.getEnabledPercentage();
+            logger.trace(String.format("Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.metricName, orig, value, 100/percent));
         }
         this.sum.addAndGet(value);
     }
