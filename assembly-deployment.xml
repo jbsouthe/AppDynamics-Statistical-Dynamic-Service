@@ -13,6 +13,7 @@
                 <include>LICENSE</include>
                 <include>NOTICE.txt</include>
 				<include>doc-images/*.png</include>
+				<include>config.properties</include>
             </includes>
             <lineEnding>unix</lineEnding>
             <fileMode>0644</fileMode>

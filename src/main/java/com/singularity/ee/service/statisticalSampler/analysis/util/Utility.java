@@ -1,0 +1,151 @@
+package com.singularity.ee.service.statisticalSampler.analysis.util;
+
+import com.appdynamics.apm.appagent.api.DataScope;
+import org.apache.logging.log4j.Level;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class Utility {
+    private static Pattern patternConnectionString = Pattern.compile("^(?<jdbc>[j|J][d|D][b|B][c|C]:)?(?<vendor>[^:]+):(?<driver>[^:]+):(?<path>.*);?");
+    private static Pattern patternAnalyticsDateString = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z");
+    private static SimpleDateFormat analyticsDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    public static final String controlDateFormatString = "yyy-MM-dd_HH:mm:ss_z";
+    private static SimpleDateFormat controlDateFormat = new SimpleDateFormat(controlDateFormatString);
+    private static Set<DataScope> snapshotDatascope;
+
+    public static String encode( String original ){
+        /* this, of course, got rediculous, replacing with a utility external to code base */
+        try {
+            return URLEncoder.encode(original, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            System.out.println(String.format("Unsupported Encoding Exception: %s", e.getMessage()));
+        }
+        //falling back to the manual, because it is already written..
+        return original.replace("%", "%25")
+                .replace("|","%7C")
+                .replace(" ", "%20")
+                .replace(":","%3A")
+                .replace(".", "%2E")
+                .replace("-", "%2D")
+                .replace("#", "%23")
+                .replace("\"", "%22")
+                .replace("/", "%2F")
+                .replace("(", "%28")
+                .replace(")", "%29")
+                .replace("<", "%3C")
+                .replace(">", "%3E")
+                ;
+    }
+
+    public static String getDateString(long dateTime) { //ISO8601 Date (Extend) https://dencode.com/en/date/iso8601
+        return ZonedDateTime.ofInstant(new Date(dateTime).toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
+    }
+    public static String getEncodedDateString( long dateTime ) {
+        return encode(getDateString(dateTime));
+    }
+
+    public static String escapeQuotes( String input ) {
+        return input.replace("\"", "\\\"");
+    }
+
+    public static String parseDatabaseVendor( String connectionString) {
+        Matcher matcher = patternConnectionString.matcher(connectionString);
+        if(matcher.find()) return matcher.group("vendor");
+        return "oracle";
+    }
+
+    public static String parseDatabasePath( String connectionString ) {
+        Matcher matcher = patternConnectionString.matcher(connectionString);
+        if(matcher.find()) return matcher.group("path");
+        return null;
+    }
+
+    public static String cleanFileName( String in ) {
+        return in.replace('.', '_').replace(' ', '_');
+    }
+
+    public static long now( long adj ) { return now()+adj; }
+    public static long now() { return new Date().getTime(); }
+
+    public static boolean isThisStringADate(String data) {
+        if( data == null ) return false;
+        //"2021-10-14T18:00:51.435Z"
+        Matcher matcher = patternAnalyticsDateString.matcher(data);
+        if(matcher.matches()) return true;
+        return false;
+    }
+
+    public static long parseAnalyticsDateString(String data) throws ParseException {
+        //"2021-10-14T18:00:51.435Z"
+        return analyticsDateFormat.parse(data).getTime();
+    }
+
+    public static long parseControlDateString( String data ) throws ParseException {
+        return controlDateFormat.parse(data).getTime();
+    }
+
+    public static String formatControlDate( long date ) {
+        return formatControlDate( new Date(date) );
+    }
+
+    public static String formatControlDate( Date date ) {
+        return controlDateFormat.format(date);
+    }
+
+    public static Set<DataScope> getSnapshotDatascope() {
+        if( snapshotDatascope == null ) {
+            snapshotDatascope = new HashSet<>();
+            snapshotDatascope.add(DataScope.SNAPSHOTS);
+        }
+        return snapshotDatascope;
+    }
+
+    public static boolean isAPIKeyValidFormat(String clientID, String hostname) {
+        if( clientID == null || hostname == null ) return false;
+        if( !clientID.contains("@") ) return false;
+        String apikey = clientID.split("\\@")[0];
+        if( hostname.contains(".") )
+            hostname = hostname.split("\\.")[0];
+        if( String.format("%s@%s",apikey,hostname).equals(clientID) ) return true;
+        return false;
+    }
+
+
+    public static Level getLevel( String s ) {
+        switch (s.toUpperCase()) {
+            case "TRACE": { return Level.TRACE; }
+            case "DEBUG": { return Level.DEBUG; }
+            case "INFO": { return Level.INFO; }
+            case "WARN": { return Level.WARN; }
+            case "ERROR": { return Level.ERROR; }
+            default: return null;
+        }
+    }
+
+    public static double getZFromConfidenceLevel( String confidenceLevel ) {
+        switch (confidenceLevel) {
+            case "80%": return 1.28;
+            case "85%": return 1.44;
+            case "90%": return 1.64;
+            case "95%": return 1.96;
+            case "98%": return 2.33;
+            case "99%":
+            default: return 2.58;
+        }
+    }
+
+    public static boolean isStringSet( String s ) {
+        if( s == null ) return false;
+        if( "".equalsIgnoreCase(s) ) return false;
+        return true;
+    }
+}
