@@ -20,6 +20,7 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
     public ExtrapolatedSumMetricAggregator(String metricName, AgentNodeProperties agentNodeProperties ) {
         this.agentNodeProperties=agentNodeProperties;
         this.metricName=metricName;
+        logger.info(String.format("Createing new Extrapolated Aggregator for Summation metric '%s'",metricName));
     }
 
     public MetricAggregatorType getType() {
@@ -32,7 +33,7 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
             long orig=value;
             int percent = agentNodeProperties.getEnabledPercentage();
             value *= 100/agentNodeProperties.getEnabledPercentage();
-            logger.trace(String.format("Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.metricName, orig, value, 100/percent));
+            logger.debug(String.format("Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.metricName, orig, value, 100/percent));
         }
         this.sum.addAndGet(value);
     }
