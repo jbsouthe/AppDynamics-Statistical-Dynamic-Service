@@ -29,6 +29,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.serviceContext=iServiceContext;
         agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
         isEnabled=false;
+        registerExtrapolationSumAggregators();
     }
 
     /**
@@ -76,7 +77,6 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
             }
         } else {//else r <= 10%; so enable everything
             sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable sending metrics and events to the controller r=" + r);
-            registerExtrapolationSumAggregators();
             enableEverything();
         }
         this.lastDeterminationTimestamp = System.currentTimeMillis();
@@ -113,10 +113,11 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         for ( AgentRawMetricIdentifier agentRawMetricIdentifier : iMetricReporterFactory.getRegisteredMetrics() ) {
             if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM)
                 && !agentRawMetricIdentifier.getName().startsWith("Agent|")) {
-                    logger.debug(String.format("Updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
+                    logger.info(String.format("Updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
+                    iMetricReporterFactory.unregisterAggregator(agentRawMetricIdentifier);
                     iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new ExtrapolatedSumMetricAggregator( agentRawMetricIdentifier.getName(), agentNodeProperties));
             } else {
-                logger.trace(String.format("Not updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
+                logger.info(String.format("Not updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
             }
         }
     }
