@@ -29,7 +29,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.serviceContext=iServiceContext;
         agentNodeProperties.setHoldMaxEvents( ReflectionHelper.getMaxEvents(serviceComponent.getEventHandler().getEventService()) );
         isEnabled=false;
-        registerExtrapolationSumAggregators();
+        //registerExtrapolationSumAggregators(); disabled until i can figure out how to do this without causing the summation metrics to stop updating
     }
 
     /**
@@ -77,7 +77,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
             }
         } else {//else r <= 10%; so enable everything
             sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable sending metrics and events to the controller r=" + r);
-            registerExtrapolationSumAggregators();
+            //registerExtrapolationSumAggregators(); disabled until i can figure out how to do this without causing the summation metrics to stop updating
             enableEverything();
         }
         this.lastDeterminationTimestamp = System.currentTimeMillis();
