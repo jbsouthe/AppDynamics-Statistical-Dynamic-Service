@@ -80,7 +80,12 @@ public class ReflectionHelper {
 
     private static boolean isJava9OrAbove() {
         String javaVersion = System.getProperty("java.version");
-        int majorVersion = Integer.parseInt(javaVersion.split("\\.")[0]);
+        int majorVersion = 8;
+        if( javaVersion.contains(".") ) {
+            majorVersion = Integer.parseInt(javaVersion.split("\\.")[1]);
+        } else {
+            majorVersion = Integer.parseInt(javaVersion);
+        }
         return majorVersion > 8;
     }
 

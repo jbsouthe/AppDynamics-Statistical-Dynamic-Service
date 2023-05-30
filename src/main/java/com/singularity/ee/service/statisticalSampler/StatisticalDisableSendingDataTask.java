@@ -3,10 +3,10 @@ package com.singularity.ee.service.statisticalSampler;
 import com.singularity.ee.agent.appagent.kernel.ServiceComponent;
 import com.singularity.ee.agent.appagent.kernel.spi.IDynamicService;
 import com.singularity.ee.agent.appagent.kernel.spi.IServiceContext;
+import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.AppMetricAggregatorFactory;
 import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.SumMetricAggregator;
-import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.AgentRawMetricIdentifier;
-import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.IMetricReporterFactory;
-import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.MetricAggregatorType;
+import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.boot.IMetricAggregator;
+import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.*;
 import com.singularity.ee.agent.util.log4j.ADLoggerFactory;
 import com.singularity.ee.agent.util.log4j.IADLogger;
 import com.singularity.ee.util.javaspecific.threads.IAgentRunnable;
@@ -77,6 +77,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
             }
         } else {//else r <= 10%; so enable everything
             sendInfoEvent("This Agent WILL be sending data, it is randomly selected to enable sending metrics and events to the controller r=" + r);
+            registerExtrapolationSumAggregators();
             enableEverything();
         }
         this.lastDeterminationTimestamp = System.currentTimeMillis();
@@ -109,16 +110,39 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
     }
 
     private void registerExtrapolationSumAggregators() {
-        IMetricReporterFactory iMetricReporterFactory = serviceComponent.getMetricHandler().getAggregatorFactory();
+        AppMetricAggregatorFactory iMetricReporterFactory = (AppMetricAggregatorFactory) serviceComponent.getMetricHandler().getAggregatorFactory();
         for ( AgentRawMetricIdentifier agentRawMetricIdentifier : iMetricReporterFactory.getRegisteredMetrics() ) {
             if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM)
                 && !agentRawMetricIdentifier.getName().startsWith("Agent|")) {
-                    logger.info(String.format("Updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
-                    iMetricReporterFactory.unregisterAggregator(agentRawMetricIdentifier);
-                    iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new ExtrapolatedSumMetricAggregator( agentRawMetricIdentifier.getName(), agentNodeProperties));
-            } else {
-                logger.info(String.format("Not updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
+                try {
+                    if( !(iMetricReporterFactory.getAggregator(agentRawMetricIdentifier) instanceof ExtrapolatedSumMetricAggregator) ) {
+                        registerNewMetricAggregator(iMetricReporterFactory, agentRawMetricIdentifier);
+                    }
+                } catch (MetricUnavailableException metricUnavailableException) {
+                    logger.warn(String.format("Error while checking existing aggregator for metric '%s', Exception: %s", agentRawMetricIdentifier.getName(), metricUnavailableException));
+                    registerNewMetricAggregator(iMetricReporterFactory, agentRawMetricIdentifier);
+                }
             }
+        }
+    }
+
+    private void registerNewMetricAggregator(AppMetricAggregatorFactory iMetricReporterFactory, AgentRawMetricIdentifier agentRawMetricIdentifier) {
+        logger.debug(String.format("Updating MetricAggregator for '%s' of type '%s'", agentRawMetricIdentifier.getName(), agentRawMetricIdentifier.getMetricAggregatorType().name()));
+        iMetricReporterFactory.unregisterAggregator(agentRawMetricIdentifier);
+        try {
+            IMetricAggregator metricAggregator = iMetricReporterFactory.safeGetAggregator(agentRawMetricIdentifier);
+            iMetricReporterFactory.purge(metricAggregator);
+            logger.debug(String.format("before metric aggregator for %s is %s", agentRawMetricIdentifier.getName(), metricAggregator.toString()));
+        } catch (Exception e) {
+            logger.debug("before exception: "+ e,e);
+        }
+        IMetricAggregator extrapolatedSumMetricAggregator = iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new ExtrapolatedSumMetricAggregator(agentRawMetricIdentifier.getName(), agentNodeProperties));
+        logger.debug(String.format("during metric aggregator for %s is %s", agentRawMetricIdentifier.getName(), extrapolatedSumMetricAggregator.toString()));
+        try {
+            IMetricAggregator metricAggregator = iMetricReporterFactory.safeGetAggregator(agentRawMetricIdentifier);
+            logger.debug(String.format("after metric aggregator for %s is %s", agentRawMetricIdentifier.getName(), metricAggregator.toString()));
+        } catch (Exception e) {
+            logger.debug("after exception: "+ e,e);
         }
     }
 }

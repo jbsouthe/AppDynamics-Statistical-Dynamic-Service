@@ -20,7 +20,7 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
     public ExtrapolatedSumMetricAggregator(String metricName, AgentNodeProperties agentNodeProperties ) {
         this.agentNodeProperties=agentNodeProperties;
         this.metricName=metricName;
-        logger.info(String.format("Createing new Extrapolated Aggregator for Summation metric '%s'",metricName));
+        logger.info(String.format("Creating new Extrapolated Aggregator for Summation metric '%s'",metricName));
     }
 
     public MetricAggregatorType getType() {
@@ -28,12 +28,13 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
     }
 
     protected void _report(long value) {
+        logger.debug(String.format("metric '%s' recording value %d", this.metricName, value));
         this.setAsChanged();
         if( agentNodeProperties.isEnabled() ) {
             long orig=value;
             int percent = agentNodeProperties.getEnabledPercentage();
             value *= 100/agentNodeProperties.getEnabledPercentage();
-            logger.debug(String.format("Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.metricName, orig, value, 100/percent));
+            logger.info(String.format("Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.metricName, orig, value, 100/percent));
         }
         this.sum.addAndGet(value);
     }
@@ -60,6 +61,11 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
         val.setMax(sum);
         val.setMin(sum);
         val.setCount(1L);
+        logger.debug(val);
         return val;
+    }
+
+    public String toString() {
+        return String.format("%s {%s} %d%% enabled? %s", this.getClass().getName(), this.metricName, agentNodeProperties.getEnabledPercentage(), agentNodeProperties.isEnabled());
     }
 }
