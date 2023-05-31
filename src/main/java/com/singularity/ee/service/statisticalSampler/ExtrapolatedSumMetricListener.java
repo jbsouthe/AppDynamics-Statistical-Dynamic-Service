@@ -10,19 +10,23 @@ public class ExtrapolatedSumMetricListener implements IMetricListener {
 
     IMetricAggregator metricAggregator;
     AgentNodeProperties agentNodeProperties;
+    String name = "UNKNOWN";
 
-    public ExtrapolatedSumMetricListener(IMetricAggregator metricAggregator, AgentNodeProperties agentNodeProperties ) {
+    public ExtrapolatedSumMetricListener(String name, IMetricAggregator metricAggregator, AgentNodeProperties agentNodeProperties ) {
         this.metricAggregator = metricAggregator;
         this.agentNodeProperties = agentNodeProperties;
+        this.name = name;
     }
 
     @Override
     public void report(long value) {
-        if( agentNodeProperties.isEnabled() ) {
+        if( agentNodeProperties.isEnabled() && !agentNodeProperties.isMetricThrottled() ) {
             long orig=value;
             int percent = agentNodeProperties.getEnabledPercentage();
             value *= 100/agentNodeProperties.getEnabledPercentage();
-            logger.info(String.format("Listener Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", orig, value, 100/percent));
+            logger.debug(String.format("Listener Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.name, orig, value, 100/percent));
+            value -= orig; //remove the original value, because we are adding this to the already collected value
+            ReflectionHelper.addReportMetric( this.metricAggregator, value);
         }
     }
 }
