@@ -27,30 +27,30 @@
         <dependency>
             <groupId>com.appdynamics.agent</groupId>
             <artifactId>appagent-boot</artifactId>
-            <version>22.8.0.34104</version>
+            <version>v23.4.0.34758</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/appagent-boot-v22.8.0.34104.jar</systemPath>
+            <systemPath>${project.basedir}/lib/appagent-boot-v23.4.0.34758.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.appdynamics.agent</groupId>
             <artifactId>appagent</artifactId>
-            <version>22.8.0.34104</version>
+            <version>v23.4.0.34758</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/appagent-v22.8.0.34104.jar</systemPath>
+            <systemPath>${project.basedir}/lib/appagent-v23.4.0.34758.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.appdynamics.agent</groupId>
             <artifactId>common-utils</artifactId>
-            <version>22.8.0.34104</version>
+            <version>v23.4.0.34758</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/comon-utils-v22.8.0.34104.jar</systemPath>
+            <systemPath>${project.basedir}/lib/common-utils-v23.4.0.34758.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.appdynamics.agent</groupId>
             <artifactId>javaagent</artifactId>
-            <version>22.8.0.34104</version>
+            <version>v23.4.0.34758</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/javaagent-v22.8.0.34104.jar</systemPath>
+            <systemPath>${project.basedir}/lib/javaagent-v23.4.0.34758.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
