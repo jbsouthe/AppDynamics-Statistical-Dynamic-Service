@@ -29,7 +29,7 @@ public class StatisticalSamplerService implements IDynamicService {
     private StatisticalDisableSendingDataTask statisticalDisableSendingDataTask;
     private final ServiceComponent serviceComponent = LifeCycleManager.getInjector();
     private long taskInitialDelay=0;
-    private long taskInterval=60; //every 1 minute, with the task itself only randomly deciding every 15 mintues
+    private long taskInterval=15; //every 1 minute, with the task itself only randomly deciding every 15 minutes
     private IAgentScheduledExecutorService scheduler;
     private IServiceContext iServiceContext;
     private IDynamicServiceManager dynamicServiceManager;
