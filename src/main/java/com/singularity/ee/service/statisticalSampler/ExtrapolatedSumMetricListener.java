@@ -26,7 +26,8 @@ public class ExtrapolatedSumMetricListener implements IMetricListener {
             value *= 100/agentNodeProperties.getEnabledPercentage();
             logger.debug(String.format("Listener Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.name, orig, value, 100/percent));
             value -= orig; //remove the original value, because we are adding this to the already collected value
-            ReflectionHelper.addReportMetric( this.metricAggregator, value);
+            //ReflectionHelper.addReportMetric( this.metricAggregator, value);
+            this.metricAggregator.reportBypassBackgroundProcessing(value);
         }
     }
 }
