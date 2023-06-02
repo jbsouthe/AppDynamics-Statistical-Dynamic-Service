@@ -1,4 +1,4 @@
-package com.singularity.ee.service.statisticalSampler;
+package com.singularity.ee.service.statisticalSampler.aggregator;
 
 
 import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.AMetricAggregator;
@@ -6,6 +6,7 @@ import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.Metr
 import com.singularity.ee.agent.util.log4j.ADLoggerFactory;
 import com.singularity.ee.agent.util.log4j.IADLogger;
 import com.singularity.ee.controller.api.dto.RawMetricValue;
+import com.singularity.ee.service.statisticalSampler.AgentNodeProperties;
 import com.singularity.ee.util.javaspecific.atomic.AgentAtomicLongImpl;
 import com.singularity.ee.util.spi.IAgentAtomicLong;
 
@@ -15,12 +16,9 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
     private final IAgentAtomicLong sum = new AgentAtomicLongImpl(0L);
     private final IAgentAtomicLong lastAggregatedValue = new AgentAtomicLongImpl(0L);
     private AgentNodeProperties agentNodeProperties;
-    private String metricName;
 
-    public ExtrapolatedSumMetricAggregator(String metricName, AgentNodeProperties agentNodeProperties ) {
+    public ExtrapolatedSumMetricAggregator(AgentNodeProperties agentNodeProperties ) {
         this.agentNodeProperties=agentNodeProperties;
-        this.metricName=metricName;
-        logger.info(String.format("Creating new Extrapolated Aggregator for Summation metric '%s'",metricName));
     }
 
     public MetricAggregatorType getType() {
@@ -28,13 +26,16 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
     }
 
     protected void _report(long value) {
-        logger.debug(String.format("metric '%s' recording value %d", this.metricName, value));
+        logger.debug(String.format("metric recording value %d", value));
         this.setAsChanged();
         if( agentNodeProperties.isEnabled() ) {
+            if( agentNodeProperties.isMetricThrottled() ) {
+                return; //do nothing, do not record this metric and let it idle
+            } //else fall through and record an extrapolated sum
             long orig=value;
             int percent = agentNodeProperties.getEnabledPercentage();
             value *= 100/agentNodeProperties.getEnabledPercentage();
-            logger.info(String.format("Extrapolating metric '%s' value from '%d' to '%d' with factor of %d", this.metricName, orig, value, 100/percent));
+            logger.info(String.format("Extrapolating metric value from '%d' to '%d' with factor of %d", orig, value, 100/percent));
         }
         this.sum.addAndGet(value);
     }
@@ -61,11 +62,10 @@ public class ExtrapolatedSumMetricAggregator extends AMetricAggregator {
         val.setMax(sum);
         val.setMin(sum);
         val.setCount(1L);
-        logger.debug(val);
         return val;
     }
 
     public String toString() {
-        return String.format("%s {%s} %d%% enabled? %s", this.getClass().getName(), this.metricName, agentNodeProperties.getEnabledPercentage(), agentNodeProperties.isEnabled());
+        return String.format("%s %d%% enabled? %s", this.getClass().getName(), agentNodeProperties.getEnabledPercentage(), agentNodeProperties.isEnabled());
     }
 }

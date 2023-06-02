@@ -1,7 +1,10 @@
 package com.singularity.ee.service.statisticalSampler;
 
+import com.singularity.ee.agent.commonservices.metricgeneration.MetricGenerationService;
+import com.singularity.ee.agent.commonservices.metricgeneration.MetricReporter;
 import com.singularity.ee.agent.util.log4j.ADLoggerFactory;
 import com.singularity.ee.agent.util.log4j.IADLogger;
+import com.singularity.ee.controller.api.constants.AgentType;
 import com.singularity.ee.util.system.SystemUtilsTranslateable;
 
 import java.lang.reflect.Field;
@@ -123,5 +126,50 @@ public class ReflectionHelper {
             logger.warn(String.format("Can not call %s._report(%d), Exception: %s",metricAggregator.getClass().getName(), value, e.getMessage()), e);
         }
 
+    }
+
+    public static MetricGenerationService getMetricGenerationService( Object metricReporter ) throws IllegalAccessException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, NoSuchFieldException {
+        Field field = metricReporter.getClass().getDeclaredField("mgs");
+        if ( isJava9OrAbove() )
+            updateModuleAccessJava9Plus(metricReporter, "com.singularity.ee.agent.commonservices.metricgeneration");
+        field.setAccessible(true);
+        return (MetricGenerationService) field.get(metricReporter);
+    }
+
+    public static AgentType getAgentType( Object metricGenerationService ) throws NoSuchFieldException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Field field = metricGenerationService.getClass().getDeclaredField("agentType");
+        if ( isJava9OrAbove() )
+            updateModuleAccessJava9Plus(metricGenerationService, "com.singularity.ee.agent.commonservices.metricgeneration");
+        field.setAccessible(true);
+        return (AgentType) field.get(metricGenerationService);
+    }
+
+    public static void setMetricReporter( Object metricGenerationService, StatMetricReporter statMetricReporter ) throws NoSuchFieldException, ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        Field field = metricGenerationService.getClass().getDeclaredField("metricReporter");
+        field.setAccessible(true);
+
+        // Check the Java version at runtime
+        if (isJava9OrAbove()) {
+            // Update the module to allow access to the field
+            updateModuleAccessJava9Plus(metricGenerationService, "com.singularity.ee.agent.commonservices.metricgeneration");
+
+            // Remove the final modifier using Java 9+ specific logic
+            removeFinalModifierJava9Plus(field);
+        } else {
+            // Remove the final modifier using Java 8 specific logic
+            removeFinalModifierJava8(field);
+        }
+
+        // Update the field value
+        field.set(metricGenerationService, (MetricReporter) statMetricReporter);
+    }
+
+    public static void updateMetricReporter(MetricGenerationService mgs, AgentNodeProperties agentNodeProperties) {
+        try {
+            StatMetricReporter statMetricReporter = new StatMetricReporter( getMetricGenerationService(mgs.getMetricReporter()), getAgentType(mgs), agentNodeProperties);
+            setMetricReporter( mgs, statMetricReporter);
+        } catch (Exception e) {
+            logger.warn("Error trying to do some really sketchy stuff Exception: "+e,e);
+        }
     }
 }

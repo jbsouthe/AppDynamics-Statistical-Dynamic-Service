@@ -1,9 +1,10 @@
-package com.singularity.ee.service.statisticalSampler;
+package com.singularity.ee.service.statisticalSampler.aggregator;
 
 import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.boot.IMetricAggregator;
 import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.boot.IMetricListener;
 import com.singularity.ee.agent.util.log4j.ADLoggerFactory;
 import com.singularity.ee.agent.util.log4j.IADLogger;
+import com.singularity.ee.service.statisticalSampler.AgentNodeProperties;
 
 public class ExtrapolatedSumMetricListener implements IMetricListener {
     private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.ExtrapolatedSumMetricListener");
