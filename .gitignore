@@ -1,6 +1,6 @@
 src/main/java/com/singularity/ee/service/statisticalSampler/MetaData.java
 target/
-*.jar
+AgentStatisticalSampler*.jar
 *.zip
 **/.DS_Store
 .idea

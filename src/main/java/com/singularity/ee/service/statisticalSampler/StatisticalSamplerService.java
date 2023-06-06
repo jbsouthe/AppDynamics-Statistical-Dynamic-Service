@@ -77,7 +77,7 @@ public class StatisticalSamplerService implements IDynamicService {
             throw new ServiceStartException("Dagger not initialised, so cannot start the "+ MetaData.SERVICENAME);
         }
         this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
-        this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
+        this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 60, AgentTimeUnit.SECONDS);
         this.isServiceStarted = true;
         logger.info("Started " + this.getName() + " with initial delay " + this.taskInitialDelay + ", and with interval " + this.taskInterval + " in Seconds");
 
