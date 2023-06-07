@@ -49,7 +49,7 @@ public class Controller {
     private ResponseHandler<String> responseHandler;
     private String application, tier;
 
-    public Controller( String urlString, String clientId, String clientSecret, String application, String tier ) throws MalformedURLException {
+    public Controller( String urlString, String clientId, String clientSecret, String application, String tier, int cutoffNodeCount ) throws MalformedURLException {
         if( !urlString.endsWith("/") ) urlString+="/"; //this simplifies some stuff downstream
         this.url = new URL(urlString);
         this.hostname = this.url.getHost();
@@ -67,12 +67,51 @@ public class Controller {
             this.applications.addAll(Arrays.asList(controllerModel.getApplications()));
         }
         for( Application appModel : this.applications )
-            appModel.filterTiersDown(tier);
+            appModel.filterTiersDown(tier, cutoffNodeCount);
         StringBuilder stringBuilder = new StringBuilder("Application Count ");
         stringBuilder.append(applications.size()).append(" Tiers:\n");
+        List<Application> prunedAppList = new ArrayList<>();
         for( Application appModel : this.applications )
-            stringBuilder.append("\t").append(appModel).append("\n");
+            if( appModel.tiers != null && appModel.tiers.length > 0 ) {
+                stringBuilder.append("\t").append(appModel).append("\n");
+                prunedAppList.add(appModel);
+            }
+        this.applications.clear();
+        this.applications.addAll(prunedAppList);
         logger.info("Controller initialized %s", stringBuilder.toString());
+    }
+
+
+    public void calculateSampleSizes(Double Z, Double E) {
+        for( Application app : this.applications ) {
+            for( Tier appTier : app.tiers ) {
+                //Overall Application Performance|{Tier}|Calls per Minute
+                MetricData[] metricDatas = getMetricValue(app, String.format("Overall Application Performance|%s|Calls per Minute",appTier.name));
+                if( metricDatas != null && metricDatas.length > 0 ) {
+                    double totalValue = 0;
+                    double totalCount = 0;
+                    for( MetricData metricData : metricDatas ) {
+                        for( MetricValue metricValue : metricData.metricValues ) {
+                            totalValue += metricValue.value;
+                            totalCount += metricValue.count;
+                        }
+                    }
+                    if( totalValue == 0.0 || totalCount == 0.0 ) {
+                        logger.warn(String.format("NOT ENOUGH DATA TO CALCULATE FOR App: %s Tier: %s Nodes: %d",
+                                app.name, appTier.name, appTier.numberOfNodes));
+                        continue;
+                    }
+                    double p = totalValue / totalCount;
+                    // Calculate sample size using Cochran's formula
+                    double sampleSize = (Math.pow(Z, 2) * p * (1 - p)) / Math.pow(E, 2);
+                    logger.debug(String.format("App: %s Tier: %s Nodes: %d formula totalValue=%.2f totalCount=%.2f p=%.2f Z=%.2f E=%.2f",
+                            app.name, appTier.name, appTier.numberOfNodes, totalValue, totalCount, p, Z, E));
+                    // Round up to the nearest whole number, since we can't have a fraction of a sample
+                    sampleSize = Math.ceil(sampleSize);
+                    logger.info(String.format("Application %s Tier %s Recommended Sample Size: %d of %d which is %.0f%%", app.name, appTier.name, (int)sampleSize, appTier.numberOfNodes, Math.ceil(sampleSize*100/appTier.numberOfNodes)));
+                }
+            }
+        }
     }
 
     public String getBearerToken() {
@@ -144,6 +183,11 @@ public class Controller {
         this.accessToken = gson.fromJson(json, AccessToken.class); //if this doesn't work consider creating a custom instance creator
         this.accessToken.expires_at = new Date().getTime() + (accessToken.expires_in*1000); //hoping this is enough, worry is the time difference
         return true;
+    }
+
+    public MetricData[] getMetricValue(Application application, String metricName) {
+        long timestamp = System.currentTimeMillis();
+        return getMetricValue(application, metricName, timestamp-(14*24*60*60*1000), timestamp );
     }
 
     public MetricData[] getMetricValue(Application application, String metricName, long startTimestamp, long endTimestamp ) {

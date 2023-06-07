@@ -33,10 +33,10 @@ public class AnalyzeApplicationTiers {
     private Controller controller;
     private Map<String,Double> confidenceMap, errorMap;
 
-    public AnalyzeApplicationTiers(Properties configProperties, String application, String tier, String confidenceLevel, String marginOfError) throws MalformedURLException {
+    public AnalyzeApplicationTiers(Properties configProperties, String application, String tier, Integer minimumNumberOfNodes, String confidenceLevel, String marginOfError) throws MalformedURLException {
         logger.debug("Starting with properties: %s", configProperties);
-        logger.info("Running for Application: '%s' Tier: '%s' Confidence Level: %s Margin of Error: %s",
-                (application==null? "All" : application), (tier==null? "All" : tier), confidenceLevel, marginOfError);
+        logger.info("Running for Application: '%s' Tier: '%s' With Min Node Count of %d Confidence Level: %s Margin of Error: %s",
+                (application==null? "All" : application), (tier==null? "All" : tier), minimumNumberOfNodes, confidenceLevel, marginOfError);
 
         this.confidenceMap = new HashMap<>();
         this.confidenceMap.put("80%", 1.28);
@@ -52,8 +52,8 @@ public class AnalyzeApplicationTiers {
         this.errorMap.put("7%", 0.07);
         this.errorMap.put("10%", 0.1);
 
-        this.controller = new Controller(configProperties.getProperty("controller-url"), configProperties.getProperty("api-key"), configProperties.getProperty("api-secret"), application, tier);
-
+        this.controller = new Controller(configProperties.getProperty("controller-url"), configProperties.getProperty("api-key"), configProperties.getProperty("api-secret"), application, tier, minimumNumberOfNodes);
+        this.controller.calculateSampleSizes( this.confidenceMap.get(confidenceLevel), this.errorMap.get(marginOfError) );
     }
 
     public static void main( String ... args ) {
@@ -76,6 +76,10 @@ public class AnalyzeApplicationTiers {
         parser.addArgument("-t", "--tier")
                 .metavar("Tier")
                 .help("Only analyze a specific tier");
+        parser.addArgument("-n", "--nodes")
+                .setDefault(100)
+                .metavar("Minimum Node Count")
+                .help("Only analyze tiers with a minimum of this number of nodes");
         parser.addArgument("--confidence")
                 .metavar("Confidence Level")
                 .choices("80%", "85%", "90%", "95%", "98%", "99%")
@@ -130,7 +134,7 @@ public class AnalyzeApplicationTiers {
 
         try {
             AnalyzeApplicationTiers analyzeApplicationTiers = new AnalyzeApplicationTiers( configProperties,
-                    namespace.getString("application"), namespace.getString("tier"),
+                    namespace.getString("application"), namespace.getString("tier"), namespace.getInt("nodes"),
                     namespace.getString("confidence"), namespace.getString("error"));
         } catch (MalformedURLException e) {
             logger.error("Error in controller-url config property '%s' Exception: %s", configProperties.getProperty("controller-url"), e.getMessage());

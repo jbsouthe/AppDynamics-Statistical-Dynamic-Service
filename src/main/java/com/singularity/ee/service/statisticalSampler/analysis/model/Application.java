@@ -10,20 +10,19 @@ public class Application {
     public Tier[] tiers;
     public Node[] nodes;
 
-    public void filterTiersDown( String tierName ) {
-        if( tierName == null ) return;
+    public void filterTiersDown( String tierName, int minimumNodeCount ) {
+        if( tierName == null && minimumNodeCount < 0 ) return;
+        List<Tier> tierList = new ArrayList<>();
         for( Tier tier : tiers ) {
-            if( tier.name.equals(tierName) ) {
-                tiers = new Tier[]{tier};
+            if( tierName != null && tier.name.equals(tierName) ) {
+                //tiers = new Tier[]{tier};
+                tierList.add(tier);
                 break;
             }
+            if( tier.numberOfNodes >= minimumNodeCount )
+                tierList.add(tier);
         }
-        if( tiers.length == 0 ) return;
-        List<Node> newNodes = new ArrayList<>();
-        for( Node node : nodes ) {
-            if( node.tierId == tiers[0].id ) newNodes.add(node);
-        }
-        this.nodes = newNodes.toArray(new Node[0]);
+        tiers = tierList.toArray(new Tier[0]);
     }
 
     public String toString() {
