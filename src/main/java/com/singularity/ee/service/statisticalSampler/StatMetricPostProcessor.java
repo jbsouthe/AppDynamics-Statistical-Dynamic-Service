@@ -1,6 +1,6 @@
 package com.singularity.ee.service.statisticalSampler;
 
-import com.singularity.ee.agent.commonservices.metricgeneration.MetricPostProcessor;
+import com.singularity.ee.agent.commonservices.metricgeneration.IMetricPostProcessor;
 import com.singularity.ee.agent.commonservices.metricgeneration.metrics.MetricsForTimeslice;
 import com.singularity.ee.agent.commonservices.metricgeneration.metrics.RawMetrics;
 import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.AgentRawMetricData;
@@ -12,7 +12,7 @@ import com.singularity.ee.controller.api.dto.RawMetricValue;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatMetricPostProcessor implements MetricPostProcessor {
+public class StatMetricPostProcessor implements IMetricPostProcessor {
     private static final IADLogger logger = ADLoggerFactory.getLogger((String)"com.singularity.dynamicservice.statisticalSampler.StatMetricPostProcessor");
 
     private final AgentNodeProperties agentNodeProperties;
