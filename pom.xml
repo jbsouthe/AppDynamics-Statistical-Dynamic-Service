@@ -223,7 +223,7 @@
                             <Multi-Release>true</Multi-Release>
                             <Implementation-Title>agent-statistical-sampler</Implementation-Title>
                             <implementation-class-name>com.singularity.ee.service.statisticalSampler.StatisticalSamplerService</implementation-class-name>
-                            <Implementation-Version>v1.0</Implementation-Version>
+                            <Implementation-Version>v${pom.version}</Implementation-Version>
                             <Implementation-Vendor>AppDynamics VMO</Implementation-Vendor>
                         </manifestEntries>
                         <manifest>
