@@ -9,6 +9,7 @@ import com.singularity.ee.agent.appagent.kernel.spi.data.IServiceConfig;
 import com.singularity.ee.agent.appagent.kernel.spi.exception.ConfigException;
 import com.singularity.ee.agent.appagent.kernel.spi.exception.ServiceStartException;
 import com.singularity.ee.agent.appagent.kernel.spi.exception.ServiceStopException;
+import com.singularity.ee.agent.appagent.services.bciengine.JavaAgentManifest;
 import com.singularity.ee.agent.commonservices.metricgeneration.aggregation.SumMetricAggregator;
 import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.AgentRawMetricIdentifier;
 import com.singularity.ee.agent.commonservices.metricgeneration.metrics.spi.IMetricReporterFactory;
@@ -33,6 +34,7 @@ public class StatisticalSamplerService implements IDynamicService {
     private IAgentScheduledExecutorService scheduler;
     private IServiceContext iServiceContext;
     private IDynamicServiceManager dynamicServiceManager;
+    private JavaAgentVersion javaAgentVersion;
 
     public StatisticalSamplerService() {
         logger.info(String.format("Initializing Agent %s %s build date %s by %s visit %s for the most up to date information.",
@@ -56,6 +58,7 @@ public class StatisticalSamplerService implements IDynamicService {
         logger.info(String.format("Setting Service Context to %s",iServiceContext));
         this.iServiceContext=iServiceContext;
         this.scheduler = iServiceContext.getAgentScheduler();
+        this.javaAgentVersion = new JavaAgentVersion(JavaAgentManifest.parseManifest(iServiceContext.getInstallDir()).getJavaAgentVersion());
     }
 
     @Override
@@ -75,6 +78,12 @@ public class StatisticalSamplerService implements IDynamicService {
         }
         if (this.serviceComponent == null) {
             throw new ServiceStartException("Dagger not initialised, so cannot start the "+ MetaData.SERVICENAME);
+        }
+        if( this.javaAgentVersion == null ) {
+            throw new ServiceStartException("Java Agent Version not yet set, Service Context must not be set, so cannot start the "+ MetaData.SERVICENAME);
+        }
+        if( this.javaAgentVersion.compareTo(new JavaAgentVersion("23.6")) == -1 ) {
+            throw new ServiceStartException(String.format("Java Agent Version '%s' is less than the minimum required version '23.6.0.0', so cannot start the %s",this.javaAgentVersion, MetaData.SERVICENAME));
         }
         this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
         this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 60, AgentTimeUnit.SECONDS);
