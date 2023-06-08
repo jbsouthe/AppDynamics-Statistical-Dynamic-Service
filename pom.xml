@@ -221,7 +221,7 @@
                         <addMavenDescriptor>false</addMavenDescriptor>
                         <manifestEntries>
                             <Multi-Release>true</Multi-Release>
-                            <Implementation-Title>agent-statistical-sampler</Implementation-Title>
+                            <Implementation-Title>${pom.artifactId}</Implementation-Title>
                             <implementation-class-name>com.singularity.ee.service.statisticalSampler.StatisticalSamplerService</implementation-class-name>
                             <Implementation-Version>v${pom.version}</Implementation-Version>
                             <Implementation-Vendor>AppDynamics VMO</Implementation-Vendor>
@@ -238,7 +238,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptor>assembly-deployment.xml</descriptor>
-                    <finalName>appdynamics-agent-statisticalSampler-${pom.version}</finalName>
+                    <finalName>Appdynamics-${pom.artifactId}-${pom.version}</finalName>
                 </configuration>
                 <executions>
                     <execution>

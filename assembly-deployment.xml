@@ -21,9 +21,9 @@
     </fileSets>
     <files>
         <file>
-            <source>AgentStatisticalSampler-${pom.version}.jar</source>
+            <source>${pom.artifactId}-${pom.version}.jar</source>
             <outputDirectory>.</outputDirectory>
-            <destName>StatisticalSampler.jar</destName>
+            <destName>${pom.artifactId}.jar</destName>
         </file>
     </files>
 </assembly>
