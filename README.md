@@ -3,6 +3,8 @@
 [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 [Github Link To This Repo](https://github.com/jbsouthe/AppDynamics-Statistical-Dynamic-Service)
 
+# NOTE: Minimum Java APM Agent Required: v23.7.0.34866, this will start if it doesn't detect this version.
+
 This extension allows the AppDynamics Java Agent to decide on startup whether it should send metrics to the controller.
 In very large tiers, this data can be represented using a smaller collection of the similar sourced population data to represent the actual metrics and support higher loads.
 In tiers with 100 or more agents, the metrics reported are usually very similar in definition and volume, which means we are ingesting duplicate data that is not significantly different per node.
@@ -74,3 +76,37 @@ When the plugin is enabled, via node properties, you will see the Metrics Enable
 Additionally, when the service calculates whether or not a node will be sending events and metrics it will attempt to send an event informing of change in status, just as metrics this will one day filter out all but critical events, today it will shut off all events.
 
 ![Example Events](doc-images/ExampleEvents.png)
+
+## Picking the best Percentage, how to do it best
+
+The jar file for this dynamic service has packaged within it a utility that runs against the controller to analyze applications and tiers for a recommended percentage to configure based on the data collected and your requirements. This requires an APIKey with admin rights to the controller, configured in a config.properties file.
+
+    > java -jar AgentStatisticalSampler-1.0-20230630.jar -h
+    usage: AnalyzeApplicationTiers [-h] [-v] [-c Configuration Properties] [-a Application] [-t Tier] [-n Minimum Node Count]
+    [--confidence Confidence Level] [--error Margin of Error] [-d Verbose logging level]
+    
+    Analyze Controller Application Tiers and recommend percentage of nodes to  collect data from using Cochran's formula to determine ideal sample
+    size
+    
+    named arguments:
+    -h, --help             show this help message and exit
+    -v, --version
+    -c, --config Configuration Properties 
+                    Use this specific config properties file. (default: config.properties)
+    -a, --application Application
+                    Only analyze a specific application
+    -t, --tier Tier        Only analyze a specific tier
+    -n, --nodes Minimum Node Count
+                    Only analyze tiers with a minimum of this number of nodes (default: 100)
+    --confidence Confidence Level
+                    Target Confidence Level: {"80%", "85%", "90%", "95%", "98%", "99%"} (default: 90%)
+    --error Margin of Error
+                    Target Margin of Error: {"2%", "5%", "7%", "10%"} (default: 5%)
+    -d, --debug Verbose logging level
+                    Print debug level logging during run: {"WARN", "INFO", "DEBUG", "TRACE"} (default: INFO)
+
+The config property file has the following format, and requires the properties listed:
+
+    controller-url=https://[your controller account name].saas.appdynamics.com
+    api-key=statistical-sampler-api
+    api-secret=enter-your-secret-here
