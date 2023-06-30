@@ -29,6 +29,7 @@ public class StatisticalSamplerService implements IDynamicService {
     private IAgentScheduledFuture scheduledTaskFuture, scheduledMetricTaskFuture;
     private StatisticalDisableSendingDataTask statisticalDisableSendingDataTask;
     private final ServiceComponent serviceComponent = LifeCycleManager.getInjector();
+    private static final String MINIMUM_JAVA_AGENT_VERSION_REQUIRED = "23.7.0.34866";
     private long taskInitialDelay=0;
     private long taskInterval=15; //every 1 minute, with the task itself only randomly deciding every 15 minutes
     private IAgentScheduledExecutorService scheduler;
@@ -82,7 +83,7 @@ public class StatisticalSamplerService implements IDynamicService {
         if( this.javaAgentVersion == null ) {
             throw new ServiceStartException("Java Agent Version not yet set, Service Context must not be set, so cannot start the "+ MetaData.SERVICENAME);
         }
-        if( this.javaAgentVersion.compareTo(new JavaAgentVersion("23.6")) == -1 ) {
+        if( this.javaAgentVersion.compareTo(new JavaAgentVersion(MINIMUM_JAVA_AGENT_VERSION_REQUIRED)) == -1 ) {
             throw new ServiceStartException(String.format("Java Agent Version '%s' is less than the minimum required version '23.6.0.0', so cannot start the %s",this.javaAgentVersion, MetaData.SERVICENAME));
         }
         this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
