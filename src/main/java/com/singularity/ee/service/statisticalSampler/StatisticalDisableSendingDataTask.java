@@ -23,10 +23,7 @@ public class StatisticalDisableSendingDataTask implements IAgentRunnable {
         this.agentService=agentService;
         this.serviceComponent=serviceComponent;
         this.serviceContext=iServiceContext;
-        agentNodeProperties.setHoldMaxEvents( serviceComponent.getEventHandler().getEventService().getMaxEventSize() );
         isEnabled=false;
-        serviceComponent.getMetricHandler().getMetricService().getMetricReporter().setMetricPostProcessor( new StatMetricPostProcessor(agentNodeProperties) );
-
     }
 
     /**

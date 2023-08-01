@@ -88,6 +88,8 @@ public class StatisticalSamplerService implements IDynamicService {
         }
         this.scheduledTaskFuture = this.scheduler.scheduleAtFixedRate(this.createTask(this.serviceComponent), 0, this.taskInterval, AgentTimeUnit.SECONDS);
         this.scheduledMetricTaskFuture = this.scheduler.scheduleAtFixedRate(this.createMetricTask(this.serviceComponent), 0, 60, AgentTimeUnit.SECONDS);
+        this.agentNodeProperties.setHoldMaxEvents( serviceComponent.getEventHandler().getEventService().getMaxEventSize() );
+        this.serviceComponent.getMetricHandler().getMetricService().getMetricReporter().setMetricPostProcessor( new StatMetricPostProcessor(agentNodeProperties) );
         this.isServiceStarted = true;
         logger.info("Started " + this.getName() + " with initial delay " + this.taskInitialDelay + ", and with interval " + this.taskInterval + " in Seconds");
 
@@ -123,11 +125,7 @@ public class StatisticalSamplerService implements IDynamicService {
             this.scheduledMetricTaskFuture = null;
             this.isServiceStarted = false;
         }
-        IMetricReporterFactory iMetricReporterFactory = serviceComponent.getMetricHandler().getAggregatorFactory();
-        for ( AgentRawMetricIdentifier agentRawMetricIdentifier : iMetricReporterFactory.getRegisteredMetrics() ) {
-            if( agentRawMetricIdentifier.getMetricAggregatorType().equals(MetricAggregatorType.SUM))
-                iMetricReporterFactory.registerAggregator(agentRawMetricIdentifier, new SumMetricAggregator());
-        }
+        serviceComponent.getMetricHandler().getMetricService().getMetricReporter().setMetricPostProcessor( null );
     }
 
     @Override
